@@ -11,8 +11,8 @@
 
 This package proposes a single API to monitor different kind of Software Defined Radio. With AbstractSDRs, the following SDRs can be used 
 - All Universal Software Radio Peripheral [USRP](https://files.ettus.com/manual/), based on [UHDBindings](https://github.com/RGerzaguet/UHDBindings.jl) package
-- TRL SDR dongle, with inclusion of [RTLSDR package](https://github.com/dressel/RTLSDR.jl)
-- Any UHD device connectted to a remote PC with a network connection (for instance, Exxx USRP device) on which a Julia session works.
+- RTL SDR dongle, with inclusion of [RTLSDR package](https://github.com/dressel/RTLSDR.jl)
+- Any device connected to a remote PC with a network connection (for instance, Exxx USRP device) on which a Julia session works and run AbstractSDRs package.
 
 AbstractSDRs provides an unified API to open, transmit and received samples and close the SDRs. 
 
