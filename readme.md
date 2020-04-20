@@ -1,5 +1,5 @@
 <div align="center">
-<img src="docs/src/assets/logoAbstractSDRs.png" alt="UHDBindings.jl" width="380">
+<img src="docs/src/assets/logoAbstractSDRs.png" alt="UHDBindings.jl" width="420">
 </div>
 
 # AbstractSDRs.jl
