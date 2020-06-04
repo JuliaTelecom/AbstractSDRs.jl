@@ -37,14 +37,14 @@ function main(sdr,samplingRate)
 	# Max counter definition
 	nbBuffer  = 2*samplingRate;
 	# --- Timestamp init 
-	p 			= recv!(sig,radio);
-	nS			+= p;
+	pInit 			= recv!(sig,radio);
 	timeInit  	= time();
 	while true
 		# --- Direct call to avoid allocation 
 		p = recv!(sig,radio);
 		# # --- Ensure packet is OK
 		# err 	= getError(radio);
+		(p != pInit) && (print("."));
 		# --- Update counter
 		nS		+= p;
 		# --- Interruption 

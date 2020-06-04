@@ -11,6 +11,7 @@ module Host
 
 # --- Module dependency 
 using Sockets 
+using ZMQ
 using Printf
 # --- Symbol exportation 
 export openUhdOverNetwork;
@@ -29,8 +30,8 @@ struct CustomSockets
     ip::IPAddr;
     port::Int;
 end
-struct CTCP 
-    socket::Sockets.TCPServer;
+struct CustomZMQ 
+    socket::Socket;
     ip::IPAddr;
     port::Int;
 end
@@ -38,7 +39,7 @@ end
 
 struct SocketsuhdOverNetwork
     ip::IPAddr;
-    data::CustomSockets;
+    data::CustomZMQ;
     mdEH::CustomSockets;
     mdHE::CustomSockets;
 end
@@ -83,12 +84,15 @@ function initSockets(ip::String)
     Sockets.bind(mdEHSockets,hostAddress,portEH,reuseaddr=true);
     mdEH        = CustomSockets(mdEHSockets,hostAddress,portEH);
     # Data socket 
-    udpsock         = UDPSocket();
-    Sockets.bind(udpsock,hostAddress,2001,reuseaddr=true);
-    data        = CustomSockets(udpsock,hostAddress,2001);
-    # udpsock = listen(e310Adress, 9000)
-    # data        = CTCP(udpsock,e310Adress,9000);
-    # Create the complete socket structure 
+    # udpsock         = UDPSocket();
+    # Sockets.bind(udpsock,hostAddress,2001,reuseaddr=true);
+    # data        = CustomSockets(udpsock,hostAddress,2001);
+    zmqSock     = Socket(SUB);
+    tcpSys		 = string("tcp://$e310Adress:9999");
+    # ---  Connect to socket
+    ZMQ.subscribe(zmqSock);
+    ZMQ.connect(zmqSock,tcpSys);
+    data = CustomZMQ(zmqSock,e310Adress,9999);
     sockets     = SocketsuhdOverNetwork(hostAddress,data,mdEH,mdHE);
     return sockets
 end
@@ -224,7 +228,7 @@ function recv!(sig::Vector{Complex{Cfloat}},uhdOverNetwork::UHDOverNetwork;packe
 		# radio.packetSize is the complex size, so x2
 		(posT+uhdOverNetwork.packetSize> packetSize) ? n = packetSize - posT : n = uhdOverNetwork.packetSize;
         # --- UDP recv. This allocs. This is bad. No idea how to use prealloc pointer without rewriting the stack.
-        tmp = reinterpret(Complex{Cfloat},Sockets.recv(uhdOverNetwork.sockets.data.socket));
+        tmp = reinterpret(Complex{Cfloat},ZMQ.recv(uhdOverNetwork.sockets.data.socket));
         sig[posT .+ (1:n)] .= @view tmp[1:n]; 
 		# --- Update counters 
 		posT += n; 

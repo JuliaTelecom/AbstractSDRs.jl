@@ -10,6 +10,7 @@ module E310
 # --- Module dependency
 using UHDBindings 
 using Distributed 
+using ZMQ
 @everywhere using Sockets 
 # --- Constant definition
 const HOST_ADDRESS 		= @ip_str "192.168.10.60";
@@ -45,6 +46,8 @@ function main(carrierFreq, samplingRate, gain, nbSamples)
 	radio = openUHD(carrierFreq, samplingRate, gain); 
 	# --- Create socket for data transmission
     dataSocket  = UDPSocket();
+    dataSocket = ZMQ.Socket(PUB);
+    bind(dataSocket,"tcp://*:9999");
     # Sockets.setopt(dataSocket);
 	configHE    = UDPSocket();
 	Sockets.bind(configHE, E310_ADRESS, PORTHE, reuseaddr = true);
@@ -88,10 +91,12 @@ function main(carrierFreq, samplingRate, gain, nbSamples)
                 if mode == :rx 
 			        # --- Direct call to avoid allocation 
 			        recv!(sig, radio);
-			        # --- To UDP socket
-                    Sockets.send(dataSocket,ip"192.168.10.60",2001,sig);
+                    # --- To UDP socket
+                   ZMQ.send(dataSocket,Message(sig))
+                    # ZMQ.send(dataSocket,sig);
+                    # Sockets.send(dataSocket,ip"192.168.10.60",2001,sig);
                     # Sockets.send(dataSocket,ip"0.0.0.0",2001,sig);
-                    # yield();
+                    yield();
                 else 
                     # --- We now transmit data ! 
                     # send(radio,sig);
@@ -109,7 +114,6 @@ function main(carrierFreq, samplingRate, gain, nbSamples)
         @show exception;
 	 end
 end
-
 
 
 # --- To effectively update the radio config
@@ -163,4 +167,5 @@ end
 end
 
 # call main function 
-E310.main(868e6,4e6,10,1016);
+# E310.main(868e6,4e6,10,1016*32);
+E310.main(868e6,4e6,10,32768);
