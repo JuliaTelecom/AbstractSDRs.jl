@@ -4,7 +4,6 @@ module Benchmark
 # ---------------------------------------------------- 
 # --- External modules 
 using AbstractSDRs 
-const sdr = "UHDRx"
 # --- Functions 
 """
 Calculate rate based on Julia timing
@@ -17,7 +16,7 @@ end
 """
 Main call to monitor Rx rate
 """
-function main(samplingRate)	
+function main(sdr,samplingRate)	
 	# ---------------------------------------------------- 
 	# --- Physical layer and RF parameters 
 	# ---------------------------------------------------- 

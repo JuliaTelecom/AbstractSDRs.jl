@@ -13,7 +13,7 @@ function main()
 	nbSamples		= 2048;
     # --- Create the E310 device 
     # E310 = openE310("Rx",carrierFreq,samplingRate,gain;ip=ipAddr);
-    E310 = openSDR("E310Rx",carrierFreq,samplingRate,gain;ip=ipAddr);
+    E310 = openSDR("E310",carrierFreq,samplingRate,gain;ip=ipAddr);
     print(E310);
     sleep(2);
     @info "Ready"
