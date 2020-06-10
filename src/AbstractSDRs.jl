@@ -32,6 +32,10 @@ export recv;
 # recv! call 
 recv!(sig,obj::UHDOverNetwork,tul...) = Host.recv!(sig,obj,tul...);
 recv!(sig,obj::UHDBinding,tul...) = UHD.recv!(sig,obj,tul...);
+# Send call 
+send(sig,obj::UHDOverNetwork,tul...) = Host.send(sig,obj,tul...);
+send(sig,obj::UHDBinding,tul...) = UHD.send(sig,obj,tul...);
+export send
 # Radio API 
 updateCarrierFreq!(obj::UHDOverNetwork,tul...) = Host.updateCarrierFreq!(obj,tul...);
 updateCarrierFreq!(obj::UHDBinding,tul...) = UHD.updateCarrierFreq!(obj,tul...);
