@@ -45,10 +45,10 @@ function main(carrierFreq, samplingRate, gain, nbSamples)
 	# --- Setting a very first configuration 
 	radio = openUHD(carrierFreq, samplingRate, gain); 
 	# --- Create socket for data transmission
-    dataSocket  = UDPSocket();
     dataSocket = ZMQ.Socket(PUB);
     bind(dataSocket,"tcp://*:9999");
-    # Sockets.setopt(dataSocket);
+    # setproperty!(dataSocket, :sndtimeo, 1)
+    # setproperty!(dataSocket, :sndtimeo, 1)
 	configHE    = UDPSocket();
 	Sockets.bind(configHE, E310_ADRESS, PORTHE, reuseaddr = true);
     configEH    = UDPSocket();
@@ -86,6 +86,7 @@ function main(carrierFreq, samplingRate, gain, nbSamples)
                     D = eval(res);
                     # sig     = D[:tx];
                 end
+                # --- Recreate a new socket due to the new config 
             end
             while (!flag)
                 if mode == :rx 
@@ -167,5 +168,5 @@ end
 end
 
 # call main function 
-# E310.main(868e6,4e6,10,1016*32);
-E310.main(868e6,4e6,10,32768);
+E310.main(868e6,4e6,10,(512+36)*2*32);
+#E310.main(868e6,4e6,10,32768);
