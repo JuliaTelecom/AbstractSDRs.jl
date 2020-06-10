@@ -89,6 +89,7 @@ function initSockets(ip::String)
     # data        = CustomSockets(udpsock,hostAddress,2001);
     zmqSock     = Socket(SUB);
     tcpSys		 = string("tcp://$e310Adress:9999");
+    # setproperty!(zmqSock, :rcvtimeo, 1)
     # ---  Connect to socket
     ZMQ.subscribe(zmqSock);
     ZMQ.connect(zmqSock,tcpSys);
