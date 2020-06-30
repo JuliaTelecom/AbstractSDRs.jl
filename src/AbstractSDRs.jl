@@ -27,29 +27,29 @@ export openE310;
 export close;
 # recv call 
 recv(obj::UHDOverNetwork,tul...) = Host.recv(obj,tul...);
-recv(obj::UHDBinding,tul...) = UHD.recv(obj,tul...);
+recv(obj::UHDBinding,tul...) = UHDBindings.recv(obj,tul...);
 export recv;
 # recv! call 
 recv!(sig,obj::UHDOverNetwork,tul...) = Host.recv!(sig,obj,tul...);
-recv!(sig,obj::UHDBinding,tul...) = UHD.recv!(sig,obj,tul...);
+recv!(sig,obj::UHDBinding,tul...) = UHDBindings.recv!(sig,obj,tul...);
 # Send call 
 send(sig,obj::UHDOverNetwork,tul...) = Host.send(sig,obj,tul...);
-send(sig,obj::UHDBinding,tul...) = UHD.send(sig,obj,tul...);
+send(sig,obj::UHDBinding,tul...) = UHDBindings.send(sig,obj,tul...);
 export send
 # Radio API 
 updateCarrierFreq!(obj::UHDOverNetwork,tul...) = Host.updateCarrierFreq!(obj,tul...);
-updateCarrierFreq!(obj::UHDBinding,tul...) = UHD.updateCarrierFreq!(obj,tul...);
+updateCarrierFreq!(obj::UHDBinding,tul...) = UHDBindings.updateCarrierFreq!(obj,tul...);
 export updateCarrierFreq!;
 updateSamplingRate!(obj::UHDOverNetwork,tul...) = Host.updateSamplingRate!(obj,tul...);
-updateSamplingRate!(obj::UHDBinding,tul...) = UHD.updateSamplingRate!(obj,tul...);
+updateSamplingRate!(obj::UHDBinding,tul...) = UHDBindings.updateSamplingRate!(obj,tul...);
 export updateSamplingRate!;
 updateGain!(obj::UHDOverNetwork,tul...) = Host.updateGain!(obj,tul...);
-updateGain!(obj::UHDBinding,tul...) = UHD.updateGain!(obj,tul...);
+updateGain!(obj::UHDBinding,tul...) = UHDBindings.updateGain!(obj,tul...);
 export updateGain!;
-getError(obj::UHDBinding) = UHD.getError(obj);
+getError(obj::UHDBinding) = UHDBindings.getError(obj);
 getError(obj::UHDOverNetwork) = Host.getMD(obj)[3];
 export getError;
-getTimestamp(obj::UHDBinding) = UHD.getTimestamp(obj);
+getTimestamp(obj::UHDBinding) = UHDBindings.getTimestamp(obj);
 getTimestamp(obj::UHDOverNetwork) = Host.getMD(obj)[1:2];
 
 
