@@ -43,7 +43,7 @@ end
 # ----------------------------------------------------
 function main(carrierFreq, samplingRate, gain, nbSamples)
 	# --- Setting a very first configuration 
-	radio = openUHD(carrierFreq, samplingRate, gain); 
+    radio = openUHD(carrierFreq, samplingRate, gain); 
 	# --- Create socket for data transmission
     dataSocket = ZMQ.Socket(PUB);
     bind(dataSocket,"tcp://*:9999");
@@ -93,7 +93,7 @@ function main(carrierFreq, samplingRate, gain, nbSamples)
 			        # --- Direct call to avoid allocation 
 			        recv!(sig, radio);
                     # --- To UDP socket
-                   ZMQ.send(dataSocket,Message(sig))
+                   ZMQ.send(dataSocket,sig)
                     # ZMQ.send(dataSocket,sig);
                     # Sockets.send(dataSocket,ip"192.168.10.60",2001,sig);
                     # Sockets.send(dataSocket,ip"0.0.0.0",2001,sig);
