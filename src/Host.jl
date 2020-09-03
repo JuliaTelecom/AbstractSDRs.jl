@@ -80,7 +80,7 @@ function initSockets(ip::String)
     mdHE        = CustomSockets(mdHESockets,e310Adress,portHE);
     # To get config from uhdOverNetwork 
     mdEHSockets = UDPSocket();
-    portEH      = 36000;
+    portEH      = 30000;
     Sockets.bind(mdEHSockets,hostAddress,portEH,reuseaddr=true);
     mdEH        = CustomSockets(mdEHSockets,hostAddress,portEH);
     # Data socket 
