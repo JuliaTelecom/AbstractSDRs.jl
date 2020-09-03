@@ -40,7 +40,7 @@ end
 struct SocketsuhdOverNetwork
     ip::IPAddr;
     data::CustomZMQ;
-    mdEH::CustomSockets;
+    mdEH::CustomZMQ;
     mdHE::CustomSockets;
 end
 mutable struct Configuration
@@ -79,10 +79,15 @@ function initSockets(ip::String)
     portHE      = 30000; 
     mdHE        = CustomSockets(mdHESockets,e310Adress,portHE);
     # To get config from uhdOverNetwork 
-    mdEHSockets = UDPSocket();
-    portEH      = 30000;
-    Sockets.bind(mdEHSockets,hostAddress,portEH,reuseaddr=true);
-    mdEH        = CustomSockets(mdEHSockets,hostAddress,portEH);
+    # mdEHSockets = UDPSocket();
+    # portEH      = 30000;
+    # Sockets.bind(mdEHSockets,hostAddress,portEH,reuseaddr=true);
+    mdEHSockets = Socket(SUB);
+    tcpSys		 = string("tcp://$e310Adress:30000");
+    ZMQ.subscribe(mdEHSockets);
+    ZMQ.connect(mdEHSockets,tcpSys);
+    mdEH = CustomZMQ(mdEHSockets,e310Adress,30000);
+    # mdEH        = CustomSockets(mdEHSockets,hostAddress,portEH);
     # Data socket 
     # udpsock         = UDPSocket();
     # Sockets.bind(udpsock,hostAddress,2001,reuseaddr=true);
@@ -94,6 +99,7 @@ function initSockets(ip::String)
     ZMQ.subscribe(zmqSock);
     ZMQ.connect(zmqSock,tcpSys);
     data = CustomZMQ(zmqSock,e310Adress,9999);
+    # --- Global socket packet
     sockets     = SocketsuhdOverNetwork(hostAddress,data,mdEH,mdHE);
     return sockets
 end
@@ -240,7 +246,7 @@ function recv!(sig::Vector{Complex{Cfloat}},uhdOverNetwork::UHDOverNetwork;packe
 end
 
 function getuhdOverNetworkConfig(uhdOverNetwork::UHDOverNetwork)
-    receiver = Sockets.recv(uhdOverNetwork.sockets.mdEH.socket);
+    receiver = ZMQ.recv(uhdOverNetwork.sockets.mdEH.socket);
     res =  Meta.parse(String(receiver))
     config = eval(res);
     return Configuration(config...);
@@ -258,7 +264,7 @@ function getMD(uhdOverNetwork::UHDOverNetwork)
     # --- Send the command 
     send(uhdOverNetwork,strF);
     # --- Get the MD back 
-    receiver = Sockets.recv(uhdOverNetwork.sockets.mdEH.socket);
+    receiver = ZMQ.recv(uhdOverNetwork.sockets.mdEH.socket);
     res =  Meta.parse(String(receiver))
     # --- Convert to a MD structure 
     md  = eval(res)

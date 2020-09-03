@@ -16,7 +16,7 @@ using ZMQ
 const HOST_ADDRESS 		= @ip_str "192.168.10.60";
 const E310_ADRESS 	= @ip_str "0.0.0.0";
 const PORTHE			= 30000;
-const PORTEH 			= 36000;
+const PORTEH 			= 30000;
 
 mutable struct Configuration
 	carrierFreq::Float64;
@@ -47,11 +47,14 @@ function main(carrierFreq, samplingRate, gain, nbSamples)
 	# --- Create socket for data transmission
     dataSocket = ZMQ.Socket(PUB);
     bind(dataSocket,"tcp://*:9999");
+    # --- Create ZMQ socket for config transmission 
+    configEH = ZMQ.Socket(PUB)
+    bind(configEH,"tcp://*:30000");
     # setproperty!(dataSocket, :sndtimeo, 1)
     # setproperty!(dataSocket, :sndtimeo, 1)
 	configHE    = UDPSocket();
 	Sockets.bind(configHE, E310_ADRESS, PORTHE, reuseaddr = true);
-    configEH    = UDPSocket();
+    # configEH    = UDPSocket();
 	# --- Get samples 
 	sig		  = zeros(Complex{Cfloat}, nbSamples); 
     cnt		  = 0;
@@ -156,13 +159,15 @@ function sendConfig(configEH, radio, nbSamples)
 	config = (radio.carrierFreq, radio.samplingRate, radio.gain, radio.antenna, nbSamples);
 	# --- Send config 
 	strF = "$(config)";
-    Sockets.send(configEH, HOST_ADDRESS, PORTEH, strF);
+    # Sockets.send(configEH, HOST_ADDRESS, PORTEH, strF);
+	ZMQ.send(configEH, strF);
 end
 function sendMD(configEH, radio)
 	md = (getTimestamp(radio)..., Cint(getError(radio)));
 	# --- Send config 
 	strF = "$(md)";
-	Sockets.send(configEH, HOST_ADDRESS, PORTEH, strF);
+	# Sockets.send(configEH, HOST_ADDRESS, PORTEH, strF);
+	ZMQ.send(configEH, strF);
 end
 
 end
