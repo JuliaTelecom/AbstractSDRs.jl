@@ -1,9 +1,7 @@
-module TestE310Rx
 
 using AbstractSDRs
 
 
-function main()
 
     # --- Main parameters 
 	carrierFreq		= 440e6;	# --- The carrier frequency 	
@@ -25,8 +23,4 @@ function main()
     @show getError(E310)
     @show getTimestamp(E310)
     # 
-    close(E310);
-end
-
-
-end
+    # close(E310);

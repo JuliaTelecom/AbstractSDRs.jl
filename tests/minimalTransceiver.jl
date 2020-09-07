@@ -52,9 +52,10 @@ function main(carrierFreq, samplingRate, gain, nbSamples)
     bind(configEH,"tcp://*:30000");
     # --- Create ZMQ socket for config reception from Host 
     configHE = ZMQ.Socket(SUB);
-    tcpSys		 = string("tcp://192.168.10.60:55555");
+    tcpSys		 = string("tcp://*:55555");
     ZMQ.subscribe(configHE);
-    ZMQ.connect(configHE,tcpSys);
+    ZMQ.bind(configHE,tcpSys)
+    # ZMQ.connect(configHE,tcpSys);
 	# --- Get samples 
 	sig		  = zeros(Complex{Cfloat}, nbSamples); 
     cnt		  = 0;
@@ -67,7 +68,7 @@ function main(carrierFreq, samplingRate, gain, nbSamples)
             # --- Second order loop setup
             flag      = false;
 			# --- Interruption to update radio config 
-            # @async begin 
+            @async begin 
                 # --- We wait in this @async for a reception 
                 receiver = ZMQ.recv(configHE);
                 @info "We have receive something from remote PC"
@@ -91,7 +92,7 @@ function main(carrierFreq, samplingRate, gain, nbSamples)
                     # sig     = D[:tx];
                 end
                 # --- Recreate a new socket due to the new config 
-            # end
+            end
             while (!flag)
                 if mode == :rx 
 			        # --- Direct call to avoid allocation 
