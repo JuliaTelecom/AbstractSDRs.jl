@@ -41,7 +41,7 @@ struct SocketsuhdOverNetwork
     ip::IPAddr;
     data::CustomZMQ;
     mdEH::CustomZMQ;
-    mdHE::CustomSockets;
+    mdHE::CustomZMQ;
 end
 mutable struct Configuration
 	carrierFreq::Float64;
@@ -75,32 +75,34 @@ function initSockets(ip::String)
     hostAddress = IPv4("0.0.0.0");
     # --- Creates the MD socket 
     # To push config to uhdOverNetwork 
-    mdHESockets = UDPSocket();
-    portHE      = 30000; 
-    mdHE        = CustomSockets(mdHESockets,e310Adress,portHE);
+    # TODO: => Switch the UDP socket for config push to ZMQ 
+    mdHESockets = ZMQ.Socket(PUB)
+    bind(mdHESockets,"tcp://*:55555");
+    mdHE        = CustomZMQ(mdHESockets,e310Adress,55555)
     # To get config from uhdOverNetwork 
-    # mdEHSockets = UDPSocket();
-    # portEH      = 30000;
-    # Sockets.bind(mdEHSockets,hostAddress,portEH,reuseaddr=true);
     mdEHSockets = Socket(SUB);
     tcpSys		 = string("tcp://$e310Adress:30000");
     ZMQ.subscribe(mdEHSockets);
     ZMQ.connect(mdEHSockets,tcpSys);
     mdEH = CustomZMQ(mdEHSockets,e310Adress,30000);
-    # mdEH        = CustomSockets(mdEHSockets,hostAddress,portEH);
-    # Data socket 
-    # udpsock         = UDPSocket();
-    # Sockets.bind(udpsock,hostAddress,2001,reuseaddr=true);
-    # data        = CustomSockets(udpsock,hostAddress,2001);
+    # Rx Data socket 
     zmqSock     = Socket(SUB);
     tcpSys		 = string("tcp://$e310Adress:9999");
-    # setproperty!(zmqSock, :rcvtimeo, 1)
-    # ---  Connect to socket
     ZMQ.subscribe(zmqSock);
     ZMQ.connect(zmqSock,tcpSys);
     data = CustomZMQ(zmqSock,e310Adress,9999);
+    # Request To Receive (RTR) socket
+    rtrSock     = Socket(SUB);
+    tcpSys		 = string("tcp://$e310Adress:5555");
+    ZMQ.subscribe(rtrSock);
+    ZMQ.connect(rtrSock,tcpSys);
+    rtr = CustomZMQ(rtrSock,e310Adress,5555);
+    # Tx data socket 
+    # TODO: => Create ZMQ socket for data push
+    # ---  Connect to socket
     # --- Global socket packet
     sockets     = SocketsuhdOverNetwork(hostAddress,data,mdEH,mdHE);
+    @info "1"
     return sockets
 end
 
@@ -154,6 +156,9 @@ end
 function send(socket::CustomSockets,mess)
   Sockets.send(socket.socket,socket.ip,socket.port,mess);
 end 
+function send(socket::CustomZMQ,mess)
+    ZMQ.send(socket.socket,mess);
+end
 send(uhdOverNetwork::UHDOverNetwork,mess) = send(uhdOverNetwork.sockets.mdHE,mess)
 
 

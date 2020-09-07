@@ -13,7 +13,7 @@ using Distributed
 using ZMQ
 @everywhere using Sockets 
 # --- Constant definition
-const HOST_ADDRESS 		= @ip_str "192.168.10.60";
+# const HOST_ADDRESS 		= @ip_str "192.168.10.60";
 const E310_ADRESS 	= @ip_str "0.0.0.0";
 const PORTHE			= 30000;
 const PORTEH 			= 30000;
@@ -43,18 +43,18 @@ end
 # ----------------------------------------------------
 function main(carrierFreq, samplingRate, gain, nbSamples)
 	# --- Setting a very first configuration 
-    radio = openUHD(carrierFreq, samplingRate, gain); 
+    global radio = openUHD(carrierFreq, samplingRate, gain); 
 	# --- Create socket for data transmission
     dataSocket = ZMQ.Socket(PUB);
     bind(dataSocket,"tcp://*:9999");
-    # --- Create ZMQ socket for config transmission 
+    # --- Create ZMQ socket for config transmission to Host
     configEH = ZMQ.Socket(PUB)
     bind(configEH,"tcp://*:30000");
-    # setproperty!(dataSocket, :sndtimeo, 1)
-    # setproperty!(dataSocket, :sndtimeo, 1)
-	configHE    = UDPSocket();
-	Sockets.bind(configHE, E310_ADRESS, PORTHE, reuseaddr = true);
-    # configEH    = UDPSocket();
+    # --- Create ZMQ socket for config reception from Host 
+    configHE = ZMQ.Socket(SUB);
+    tcpSys		 = string("tcp://192.168.10.60:55555");
+    ZMQ.subscribe(configHE);
+    ZMQ.connect(configHE,tcpSys);
 	# --- Get samples 
 	sig		  = zeros(Complex{Cfloat}, nbSamples); 
     cnt		  = 0;
@@ -67,9 +67,10 @@ function main(carrierFreq, samplingRate, gain, nbSamples)
             # --- Second order loop setup
             flag      = false;
 			# --- Interruption to update radio config 
-            @async begin 
+            # @async begin 
                 # --- We wait in this @async for a reception 
-                receiver = Sockets.recv(configHE);
+                receiver = ZMQ.recv(configHE);
+                @info "We have receive something from remote PC"
                 # --- Here, we have receive something
                 # Raise a flag because something happens 
                 flag = true;
@@ -90,16 +91,13 @@ function main(carrierFreq, samplingRate, gain, nbSamples)
                     # sig     = D[:tx];
                 end
                 # --- Recreate a new socket due to the new config 
-            end
+            # end
             while (!flag)
                 if mode == :rx 
 			        # --- Direct call to avoid allocation 
 			        recv!(sig, radio);
                     # --- To UDP socket
-                   ZMQ.send(dataSocket,sig)
-                    # ZMQ.send(dataSocket,sig);
-                    # Sockets.send(dataSocket,ip"192.168.10.60",2001,sig);
-                    # Sockets.send(dataSocket,ip"0.0.0.0",2001,sig);
+                    ZMQ.send(dataSocket,sig)
                     yield();
                 else 
                     # --- We now transmit data ! 
