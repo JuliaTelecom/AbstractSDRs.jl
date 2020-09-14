@@ -36,9 +36,9 @@ export print;
 
 struct SocketsuhdOverNetwork
     ip::IPAddr;
-    data::Socket;
-    mdEH::Socket;
-    mdHE::Socket;
+    rtcSocket::Socket;
+    rttSocket::Socket;
+    brSocket::Socket;
 end
 mutable struct Configuration
 	carrierFreq::Float64;
@@ -65,38 +65,27 @@ export UHDOverNetwork;
 
 
 function initSockets(ip::String)
-    # Define IPv4 adress 
-    # uhdOverNetwork side --> Used for HE link
-    e310Adress  =  IPv4(ip);
-    # Host adress --> Used for data and feedback
-    hostAddress = IPv4("0.0.0.0");
-    # --- Creates the MD socket 
-    # To push config to uhdOverNetwork 
-    # TODO: => Switch the UDP socket for config push to ZMQ 
-    mdHESocket = ZMQ.Socket(PUB)
-    ZMQ.connect(mdHESocket,"tcp://$e310Adress:1024");
-    # To get config from uhdOverNetwork 
-    mdEHSocket = Socket(SUB);
-    tcpSys		 = string("tcp://$e310Adress:1025");
-    ZMQ.subscribe(mdEHSocket);
-    ZMQ.connect(mdEHSocket,tcpSys);
-    # Rx Data socket 
-    dataSocket     = Socket(SUB);
-    tcpSys		 = string("tcp://$e310Adress:1026");
-    ZMQ.subscribe(dataSocket);
-    ZMQ.connect(dataSocket,tcpSys);
-    # # Request To Receive (RTR) socket
-    # rtrSock     = Socket(SUB);
-    # tcpSys		 = string("tcp://$e310Adress:5555");
-    # ZMQ.subscribe(rtrSock);
-    # ZMQ.connect(rtrSock,tcpSys);
-    # rtr = CustomZMQ(rtrSock,e310Adress,5555);
-    # Tx data socket 
-    # TODO: => Create ZMQ socket for data push
-    # ---  Connect to socket
+    # --- Format e310 IP address 
+    e310Address  =  IPv4(ip);
+    # --- Configuration Socket 
+    # Socket used to send configuration and get configuration back 
+    rtcSocket   = ZMQ.Socket(REQ);
+    ZMQ.connect(rtcSocket,"tcp://$e310Address:5555");
+
+    # --- Tx socket 
+    # Socket used to transmit data from Host to e310 (Tx link)
+    rttSocket = ZMQ.Socket(REQ);
+    ZMQ.connect(rttSocket,"tcp://$e310Address:9999"); 
+
+    # --- Rx socket 
+    # Socket used for e310 to broacast Rx stream 
+    brSocket    =  Socket(SUB);   # Define IPv4 adress 
+    tcpSys		= string("tcp://$e310Address:1111");
+    ZMQ.subscribe(brSocket);
+    ZMQ.connect(brSocket,tcpSys);
+
     # --- Global socket packet
-    sockets     = SocketsuhdOverNetwork(hostAddress,dataSocket,mdEHSocket,mdHESocket);
-    @info "2"
+    sockets     = SocketsuhdOverNetwork(e310Address,rtcSocket,rttSocket,brSocket);
     return sockets
 end
 
@@ -143,12 +132,12 @@ end
 function Base.close(uhdOverNetwork::UHDOverNetwork)
     # @info "coucou"
     # --- We close here all the related sockets
-    close(uhdOverNetwork.sockets.mdHE);
-    close(uhdOverNetwork.sockets.data);
-    close(uhdOverNetwork.sockets.mdEH);
+    close(uhdOverNetwork.sockets.rtcSocket);
+    close(uhdOverNetwork.sockets.rttSocket);
+    close(uhdOverNetwork.sockets.brSocket);
 end
 
-sendConfig(uhdOverNetwork::UHDOverNetwork,mess) = send(uhdOverNetwork.sockets.mdHE,mess)
+sendConfig(uhdOverNetwork::UHDOverNetwork,mess) = send(uhdOverNetwork.sockets.rtcSocket,mess)
 
 
 function updateCarrierFreq!(uhdOverNetwork::UHDOverNetwork,carrierFreq)
@@ -229,7 +218,7 @@ function recv!(sig::Vector{Complex{Cfloat}},uhdOverNetwork::UHDOverNetwork;packe
 		# radio.packetSize is the complex size, so x2
 		(posT+uhdOverNetwork.packetSize> packetSize) ? n = packetSize - posT : n = uhdOverNetwork.packetSize;
         # --- UDP recv. This allocs. This is bad. No idea how to use prealloc pointer without rewriting the stack.
-        tmp = reinterpret(Complex{Cfloat},recv(uhdOverNetwork.sockets.data));
+        tmp = reinterpret(Complex{Cfloat},recv(uhdOverNetwork.sockets.brSocket));
         sig[posT .+ (1:n)] .= @view tmp[1:n]; 
 		# --- Update counters 
 		posT += n; 
@@ -240,7 +229,7 @@ function recv!(sig::Vector{Complex{Cfloat}},uhdOverNetwork::UHDOverNetwork;packe
 end
 
 function getuhdOverNetworkConfig(uhdOverNetwork::UHDOverNetwork)
-    receiver = recv(uhdOverNetwork.sockets.mdEH);
+    receiver = recv(uhdOverNetwork.sockets.rtcSocket);
     res =  Meta.parse(String(receiver))
     config = eval(res);
     return Configuration(config...);
@@ -258,7 +247,7 @@ function getMD(uhdOverNetwork::UHDOverNetwork)
     # --- Send the command 
     sendConfig(uhdOverNetwork,strF);
     # --- Get the MD back 
-    receiver = recv(uhdOverNetwork.sockets.mdEH);
+    receiver = recv(uhdOverNetwork.sockets.rtcSocket);
     res =  Meta.parse(String(receiver))
     # --- Convert to a MD structure 
     md  = eval(res)
