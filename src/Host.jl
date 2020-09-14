@@ -65,6 +65,7 @@ export UHDOverNetwork;
 
 
 function initSockets(ip::String)
+    # --- Format e310 IP address 
     e310Address  =  IPv4(ip);
     # --- Configuration Socket 
     # Socket used to send configuration and get configuration back 

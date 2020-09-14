@@ -83,7 +83,6 @@ function main(carrierFreq, samplingRate, gain, nbSamples)
                     D = eval(res);
                     # sig     = D[:tx];
                 end
-                # --- Recreate a new socket due to the new config 
             end
             while (!flag)
                 if mode == :rx 
