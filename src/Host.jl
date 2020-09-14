@@ -74,15 +74,15 @@ function initSockets(ip::String)
     # To push config to uhdOverNetwork 
     # TODO: => Switch the UDP socket for config push to ZMQ 
     mdHESocket = ZMQ.Socket(PUB)
-    ZMQ.connect(mdHESocket,"tcp://$e310Adress:55555");
+    ZMQ.connect(mdHESocket,"tcp://$e310Adress:1024");
     # To get config from uhdOverNetwork 
     mdEHSocket = Socket(SUB);
-    tcpSys		 = string("tcp://$e310Adress:30000");
+    tcpSys		 = string("tcp://$e310Adress:1025");
     ZMQ.subscribe(mdEHSocket);
     ZMQ.connect(mdEHSocket,tcpSys);
     # Rx Data socket 
     dataSocket     = Socket(SUB);
-    tcpSys		 = string("tcp://$e310Adress:9999");
+    tcpSys		 = string("tcp://$e310Adress:1026");
     ZMQ.subscribe(dataSocket);
     ZMQ.connect(dataSocket,tcpSys);
     # # Request To Receive (RTR) socket

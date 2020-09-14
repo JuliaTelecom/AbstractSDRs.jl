@@ -46,13 +46,13 @@ function main(carrierFreq, samplingRate, gain, nbSamples)
     global radio = openUHD(carrierFreq, samplingRate, gain); 
 	# --- Create socket for data transmission
     dataSocket = ZMQ.Socket(PUB);
-    bind(dataSocket,"tcp://*:9999");
+    bind(dataSocket,"tcp://*:1026");
     # --- Create ZMQ socket for config transmission to Host
     configEH = ZMQ.Socket(PUB)
-    bind(configEH,"tcp://*:30000");
+    bind(configEH,"tcp://*:1025");
     # --- Create ZMQ socket for config reception from Host 
     configHE = ZMQ.Socket(SUB);
-    tcpSys		 = string("tcp://*:55555");
+    tcpSys		 = string("tcp://*:1024");
     ZMQ.subscribe(configHE);
     ZMQ.bind(configHE,tcpSys)
     # ZMQ.connect(configHE,tcpSys);
