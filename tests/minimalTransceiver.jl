@@ -12,11 +12,6 @@ using UHDBindings
 using Distributed 
 using ZMQ
 @everywhere using Sockets 
-# --- Constant definition
-# const HOST_ADDRESS 		= @ip_str "192.168.10.60";
-const E310_ADRESS 	= @ip_str "0.0.0.0";
-const PORTHE			= 30000;
-const PORTEH 			= 30000;
 
 mutable struct Configuration
 	carrierFreq::Float64;
@@ -44,18 +39,15 @@ end
 function main(carrierFreq, samplingRate, gain, nbSamples)
 	# --- Setting a very first configuration 
     global radio = openUHD(carrierFreq, samplingRate, gain); 
-	# --- Create socket for data transmission
-    dataSocket = ZMQ.Socket(PUB);
-    bind(dataSocket,"tcp://*:1026");
-    # --- Create ZMQ socket for config transmission to Host
-    configEH = ZMQ.Socket(PUB)
-    bind(configEH,"tcp://*:1025");
-    # --- Create ZMQ socket for config reception from Host 
-    configHE = ZMQ.Socket(SUB);
-    tcpSys		 = string("tcp://*:1024");
-    ZMQ.subscribe(configHE);
-    ZMQ.bind(configHE,tcpSys)
-    # ZMQ.connect(configHE,tcpSys);
+    # --- Configuration socket 
+    rtcSocket   = ZMQ.Socket(REP);
+    bind(rtcSocket,"tcp://*:5555");
+    # --- RTT socket for Tx 
+    rttSocket   = ZMQ.Socket(REP);
+    bind(rttSocket,"tcp://*:9999");
+    # --- Socket for broadcast Rx
+    brSocket = ZMQ.Socket(PUB);
+    bind(brSocket,"tcp://*:1111");
 	# --- Get samples 
 	sig		  = zeros(Complex{Cfloat}, nbSamples); 
     cnt		  = 0;
@@ -70,7 +62,7 @@ function main(carrierFreq, samplingRate, gain, nbSamples)
 			# --- Interruption to update radio config 
             @async begin 
                 # --- We wait in this @async for a reception 
-                receiver = ZMQ.recv(configHE);
+                receiver = ZMQ.recv(rtcSocket);
                 @info "We have receive something from remote PC"
                 # --- Here, we have receive something
                 # Raise a flag because something happens 
@@ -81,10 +73,10 @@ function main(carrierFreq, samplingRate, gain, nbSamples)
                 (requestConfig, requestMD, mode) = updateUHD!(radio, res);
 			    if requestConfig 
 			    	# --- Sending the  configuration to Host 
-			    	sendConfig(configEH, radio.rx, nbSamples);
+			    	sendConfig(rtcSocket, radio.rx, nbSamples);
 			    end
 			    if requestMD
-			    	sendMD(configEH, radio.rx);
+			    	sendMD(rtcSocket, radio.rx);
                 end
                 if mode == :tx 
                     # reevaluate selection 
@@ -98,7 +90,7 @@ function main(carrierFreq, samplingRate, gain, nbSamples)
 			        # --- Direct call to avoid allocation 
 			        recv!(sig, radio);
                     # --- To UDP socket
-                    ZMQ.send(dataSocket,sig)
+                    ZMQ.send(brSocket,sig)
                     yield();
                 else 
                     # --- We now transmit data ! 
@@ -110,9 +102,9 @@ function main(carrierFreq, samplingRate, gain, nbSamples)
 		# --- Close UHD
 		close(radio);
 		# --- Close sockets
-		close(dataSocket);
-		close(configHE);
-		close(configEH);
+		close(rtcSocket);
+		close(rttSocket);
+		close(brSocket);
 		# --- Release USRP 
         @show exception;
 	 end
@@ -153,20 +145,18 @@ function updateUHD!(radio, res)
 end
 
 
-function sendConfig(configEH, radio, nbSamples)
+function sendConfig(rtcSocket, radio, nbSamples)
 	# --- get Configuration from radio 
 	config = (radio.carrierFreq, radio.samplingRate, radio.gain, radio.antenna, nbSamples);
 	# --- Send config 
 	strF = "$(config)";
-    # Sockets.send(configEH, HOST_ADDRESS, PORTEH, strF);
-	ZMQ.send(configEH, strF);
+	ZMQ.send(rtcSocket, strF);
 end
-function sendMD(configEH, radio)
+function sendMD(rtcSocket, radio)
 	md = (getTimestamp(radio)..., Cint(getError(radio)));
 	# --- Send config 
 	strF = "$(md)";
-	# Sockets.send(configEH, HOST_ADDRESS, PORTEH, strF);
-	ZMQ.send(configEH, strF);
+	ZMQ.send(rtcSocket, strF);
 end
 
 end
