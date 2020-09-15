@@ -41,13 +41,13 @@ function main(carrierFreq, samplingRate, gain, nbSamples)
     global radio = openUHD(carrierFreq, samplingRate, gain); 
     # --- Configuration socket 
     rtcSocket   = ZMQ.Socket(REP);
-    bind(rtcSocket,"tcp://*:5555");
+    bind(rtcSocket, "tcp://*:5555");
     # --- RTT socket for Tx 
-    rttSocket   = ZMQ.Socket(REP);
-    bind(rttSocket,"tcp://*:9999");
+    rttSocket   = ZMQ.Socket(REQ);
+    bind(rttSocket, "tcp://*:9999");
     # --- Socket for broadcast Rx
     brSocket = ZMQ.Socket(PUB);
-    bind(brSocket,"tcp://*:1111");
+    bind(brSocket, "tcp://*:1111");
 	# --- Get samples 
 	sig		  = zeros(Complex{Cfloat}, nbSamples); 
     cnt		  = 0;
@@ -89,11 +89,18 @@ function main(carrierFreq, samplingRate, gain, nbSamples)
 			        # --- Direct call to avoid allocation 
 			        recv!(sig, radio);
                     # --- To UDP socket
-                    ZMQ.send(brSocket,sig)
+                    ZMQ.send(brSocket, sig)
                     yield();
                 else 
                     # --- We now transmit data ! 
-                    # send(radio,sig);
+                    # Wait for RTT from host 
+                    ZMQ.send(rttSocket, "o");
+                    # --- Get the data
+                    sig = convert.(Complex{Cfloat},ZMQ.recv(rttSocket));
+                    # --- Send data to radio
+                    UHDBindings.send(radio, sig);
+                    yield();
+                    @info "here"
                 end
             end
 		end
@@ -105,7 +112,7 @@ function main(carrierFreq, samplingRate, gain, nbSamples)
 		close(rttSocket);
 		close(brSocket);
 		# --- Release USRP 
-        @show exception;
+        rethrow(exception);
 	 end
 end
 
@@ -136,11 +143,17 @@ function updateUHD!(radio, res)
         elseif key == :updateGain
             # --- Update Gain
             updateGain!(radio, elem);
+        elseif key == :mode
+            # --- We change mode 
+            mode = elem;
+            requestConfig = false;
+            requestMD = false;
+            @info "Change mode to $mode";
         else 
             @warn "Unknown Host order. Ask to update $key field with value $elem which is unknwown"
         end
     end
-    return (requestConfig, requestMD,mode);
+    return (requestConfig, requestMD, mode);
 end
 
 
@@ -161,5 +174,5 @@ end
 end
 
 # call main function 
-E310.main(868e6,4e6,10,(512+36)*2*32);
-#E310.main(868e6,4e6,10,32768);
+E310.main(868e6,4e6,10,(512 + 36) * 2 * 32);
+# E310.main(868e6,4e6,10,32768);

@@ -74,14 +74,13 @@ function initSockets(ip::String)
 
     # --- Tx socket 
     # Socket used to transmit data from Host to e310 (Tx link)
-    rttSocket = ZMQ.Socket(REQ);
+    rttSocket = ZMQ.Socket(REP);
     ZMQ.connect(rttSocket,"tcp://$e310Address:9999"); 
 
     # --- Rx socket 
     # Socket used for e310 to broacast Rx stream 
     brSocket    =  Socket(SUB);   # Define IPv4 adress 
     tcpSys		= string("tcp://$e310Address:1111");
-    ZMQ.subscribe(brSocket);
     ZMQ.connect(brSocket,tcpSys);
 
     # --- Global socket packet
@@ -227,6 +226,40 @@ function recv!(sig::Vector{Complex{Cfloat}},uhdOverNetwork::UHDOverNetwork;packe
 	end
 	return posT
 end
+
+#FIXME: We have setTxMode call before each Tx. Shall we do a setRxMode before each rx frame ?
+function setTxMode(uhdOverNetwork::UHDOverNetwork)
+    # --- Create char with command to be transmitted 
+    strF        = "Dict(:mode=>:tx);";
+    # --- Send the command 
+    sendConfig(uhdOverNetwork,strF);
+end
+function send(sig::Vector{Complex{Cfloat}},uhdOverNetwork::UHDOverNetwork,cyclic=false)
+    # --- Setting radio in Tx mode 
+    setTxMode(uhdOverNetwork);
+    try 
+		# --- First while loop is to handle cyclic transmission 
+		# It turns to false in case of interruption or cyclic to false 
+        while (true)
+            # --- Wait for RTT
+            rtt = ZMQ.recv(uhdOverNetwork.sockets.rttSocket);
+            # --- Sending data to Host 
+            ZMQ.send(uhdOverNetwork.sockets.rttSocket,sig);
+			# --- Detection of cyclic mode 
+			(cyclic == false ) && break 
+			# --- Forcing refresh
+			yield();
+		end 
+	catch e;
+		# --- Interruption handling
+		print(e);
+		print("\n");
+        @info "Interruption detected";
+        rethrow(e)
+	end
+
+end
+
 
 function getuhdOverNetworkConfig(uhdOverNetwork::UHDOverNetwork)
     receiver = recv(uhdOverNetwork.sockets.rtcSocket);
