@@ -81,6 +81,7 @@ function initSockets(ip::String)
     # Socket used for e310 to broacast Rx stream 
     brSocket    =  Socket(SUB);   # Define IPv4 adress 
     tcpSys		= string("tcp://$e310Address:1111");
+    ZMQ.subscribe(brSocket);
     ZMQ.connect(brSocket,tcpSys);
 
     # --- Global socket packet
@@ -187,6 +188,13 @@ function requestConfig!(uhdOverNetwork::UHDOverNetwork);
     uhdOverNetwork.packetSize = config.packetSize;
 end
 
+function setRxMode(uhdOverNetwork::UHDOverNetwork)
+    # --- Create char with command to be transmitted 
+    strF        = "Dict(:mode=>:rx);";
+    # --- Send the command 
+    sendConfig(uhdOverNetwork,strF);
+    receiver = recv(uhdOverNetwork.sockets.rtcSocket);
+end
 function recv(uhdOverNetwork::UHDOverNetwork,packetSize)
     # --- Create container 
     sig = Vector{Complex{Cfloat}}(undef,packetSize);
@@ -195,6 +203,7 @@ function recv(uhdOverNetwork::UHDOverNetwork,packetSize)
     return sig;
 end
 function recv!(sig::Vector{Complex{Cfloat}},uhdOverNetwork::UHDOverNetwork;packetSize=0,offset=0)
+    # setRxMode(uhdOverNetwork);
 	# --- Defined parameters for multiple buffer reception 
 	filled		= false;
 	# --- Fill the input buffer @ a specific offset 
@@ -233,6 +242,7 @@ function setTxMode(uhdOverNetwork::UHDOverNetwork)
     strF        = "Dict(:mode=>:tx);";
     # --- Send the command 
     sendConfig(uhdOverNetwork,strF);
+    receiver = recv(uhdOverNetwork.sockets.rtcSocket);
 end
 function send(sig::Vector{Complex{Cfloat}},uhdOverNetwork::UHDOverNetwork,cyclic=false)
     # --- Setting radio in Tx mode 

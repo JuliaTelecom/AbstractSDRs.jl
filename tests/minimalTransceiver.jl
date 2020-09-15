@@ -63,14 +63,14 @@ function main(carrierFreq, samplingRate, gain, nbSamples)
             @async begin 
                 # --- We wait in this @async for a reception 
                 receiver = ZMQ.recv(rtcSocket);
-                @info "We have receive something from remote PC"
+                @info "We have receive something from remote PC";
                 # --- Here, we have receive something
                 # Raise a flag because something happens 
                 flag = true;
                 # we create an evaluation here 
                 res = Meta.parse(String(receiver));
                 # and we update the radio and get back the desired feeback level
-                (requestConfig, requestMD, mode) = updateUHD!(radio, res);
+                @show (requestConfig, requestMD, mode) = updateUHD!(radio, res,mode);
 			    if requestConfig 
 			    	# --- Sending the  configuration to Host 
 			    	sendConfig(rtcSocket, radio.rx, nbSamples);
@@ -90,18 +90,16 @@ function main(carrierFreq, samplingRate, gain, nbSamples)
 			        recv!(sig, radio);
                     # --- To UDP socket
                     ZMQ.send(brSocket, sig)
-                    yield();
-                else 
+                elseif mode == :tx 
                     # --- We now transmit data ! 
                     # Wait for RTT from host 
-                    ZMQ.send(rttSocket, "o");
+                    ZMQ.send(rttSocket,0x01);
                     # --- Get the data
                     sig = convert.(Complex{Cfloat},ZMQ.recv(rttSocket));
                     # --- Send data to radio
-                    UHDBindings.send(radio, sig);
-                    yield();
-                    @info "here"
+                    UHDBindings.send(radio, sig,false);
                 end
+                yield();
             end
 		end
 	catch exception;
@@ -118,11 +116,10 @@ end
 
 
 # --- To effectively update the radio config
-function updateUHD!(radio, res)
+function updateUHD!(radio, res,mode)
     # --- Default output 
     requestConfig   = true;
     requestMD       = false;
-    mode            = :rx;
     # --- We create the dictionnary entry to update the radio config
     D = eval(res);
     # --- Apply the changes
@@ -147,7 +144,7 @@ function updateUHD!(radio, res)
             # --- We change mode 
             mode = elem;
             requestConfig = false;
-            requestMD = false;
+            requestMD = true;
             @info "Change mode to $mode";
         else 
             @warn "Unknown Host order. Ask to update $key field with value $elem which is unknwown"
