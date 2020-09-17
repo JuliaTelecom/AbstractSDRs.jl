@@ -16,7 +16,7 @@ end
 """
 Main call to monitor Rx rate
 """
-function main(radio,samplingRate)	
+function main(radio,samplingRate,mode=:rx)	
 	# ---------------------------------------------------- 
 	# --- Physical layer and RF parameters 
 	# ---------------------------------------------------- 
@@ -24,6 +24,57 @@ function main(radio,samplingRate)
 	carrierFreq		= 770e6;		
 	gain			= 50.0; 
 	updateSamplingRate!(radio,samplingRate);
+	# --- Print the configuration
+	print(radio);
+	# --- Init parameters 
+	# Get the radio size for buffer pre-allocation
+	nbSamples 		= radio.packetSize;
+	# We will get complex samples from recv! method
+	# Fill with random value, as it will be overwritten (and not zero for tx benchmark)
+	sig		  = randn(Complex{Cfloat},nbSamples); 
+	# --- Targeting 2 seconds acquisition
+	# Init counter increment
+	nS		  = 0;
+	# Max counter definition
+	nbBuffer  = 2*samplingRate;
+	# --- Timestamp init 
+	if mode == :rx
+		pInit 			= recv!(sig,radio);
+	else 
+		pInit 	=send(sig,radio,true;maxNumSamp=nbBuffer); 
+	end
+	timeInit  	= time();
+	while true
+		# --- Direct call to avoid allocation 
+		if mode == :rx 
+			p = recv!(sig,radio);
+			# --- Update counter
+			nS		+= p;
+		elseif mode == :tx
+			p = send(sig,radio,true;maxNumSamp=nbBuffer);
+		end
+		# --- Interruption 
+		if nS > nbBuffer
+			break 
+		end
+	end
+	# --- Last timeStamp and rate 
+	timeFinal = time();
+	# --- Getting effective rate 
+	radioRate	  = radio.samplingRate;
+    effectiveRate = getRate(timeInit,timeFinal,nS);
+	# --- Free all and return
+	return (radioRate,effectiveRate);
+end
+
+function test(radioName,samplingRate)
+	# ---------------------------------------------------- 
+	# --- Physical layer and RF parameters 
+	# ---------------------------------------------------- 
+	# --- Create the radio object in function
+	carrierFreq		= 770e6;		
+	gain			= 50.0; 
+	radio = openSDR(radioName,carrierFreq,samplingRate,gain;ip="192.168.10.12"); 
 	# --- Print the configuration
 	print(radio);
 	# --- Init parameters 
@@ -56,11 +107,11 @@ function main(radio,samplingRate)
 	timeFinal = time();
 	# --- Getting effective rate 
 	radioRate	  = radio.samplingRate;
-    effectiveRate = getRate(timeInit,timeFinal,nS);
+	effectiveRate = getRate(timeInit,timeFinal,nS);
 	# --- Free all and return
+	close(radio);
 	return (radioRate,effectiveRate);
-end
-
+end	
 
 struct Res 
 	radio::String;
@@ -73,7 +124,7 @@ end
 export Res
 
 
-function bench()
+function bench(mode=:rx)
 	# --- Set priority 
 	# --- Configuration
 	radioName 		= "e310";
@@ -84,9 +135,9 @@ function bench()
 	effectiveRate	= zeros(Float64,length(rateVect));
 	radioRate	= zeros(Float64,length(rateVect));
 	# --- Setting a very first configuration 
-	global radio = openSDR(radioName,carrierFreq,1e6,gain;ip="192.168.10.12"); 
+	global radio = openSDR(radioName,carrierFreq,1e6,gain;ip="192.168.10.11"); 
 	for (iR,targetRate) in enumerate(rateVect)
-		(rR,eR) = main(radio,targetRate);
+		(rR,eR) = main(radio,targetRate,mode);
 		radioRate[iR] = rR;
 		effectiveRate[iR] = eR;
 	end

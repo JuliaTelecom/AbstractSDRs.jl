@@ -244,9 +244,11 @@ function setTxMode(uhdOverNetwork::UHDOverNetwork)
     sendConfig(uhdOverNetwork,strF);
     receiver = recv(uhdOverNetwork.sockets.rtcSocket);
 end
-function send(sig::Vector{Complex{Cfloat}},uhdOverNetwork::UHDOverNetwork,cyclic=false)
+function send(sig::Vector{Complex{Cfloat}},uhdOverNetwork::UHDOverNetwork,cyclic=false;maxNumSamp=nothing)
     # --- Setting radio in Tx mode 
-    setTxMode(uhdOverNetwork);
+    # setTxMode(uhdOverNetwork);
+    nS  = 0;
+    it  = length(sig);
     try 
 		# --- First while loop is to handle cyclic transmission 
 		# It turns to false in case of interruption or cyclic to false 
@@ -255,7 +257,10 @@ function send(sig::Vector{Complex{Cfloat}},uhdOverNetwork::UHDOverNetwork,cyclic
             rtt = ZMQ.recv(uhdOverNetwork.sockets.rttSocket);
             # --- Sending data to Host 
             ZMQ.send(uhdOverNetwork.sockets.rttSocket,sig);
+            # --- Update counter 
+            nS += it; 
 			# --- Detection of cyclic mode 
+            (maxNumSamp !== nothing && nS > maxNumSamp) && break
 			(cyclic == false ) && break 
 			# --- Forcing refresh
 			yield();
@@ -266,8 +271,8 @@ function send(sig::Vector{Complex{Cfloat}},uhdOverNetwork::UHDOverNetwork,cyclic
 		print("\n");
         @info "Interruption detected";
         rethrow(e)
-	end
-
+    end
+    return nS;
 end
 
 

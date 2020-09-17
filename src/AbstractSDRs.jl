@@ -33,7 +33,7 @@ export recv;
 recv!(sig,obj::UHDOverNetwork,tul...) = Host.recv!(sig,obj,tul...);
 recv!(sig,obj::UHDBinding,tul...) = UHDBindings.recv!(sig,obj,tul...);
 # Send call 
-send(sig,obj::UHDOverNetwork,tul...) = Host.send(sig,obj,tul...);
+send(sig,obj::UHDOverNetwork,tul...;kwarg...) = Host.send(sig,obj,tul...;kwarg...);
 send(sig,obj::UHDBinding,tul...) = UHDBindings.send(sig,obj,tul...);
 export send
 # Radio API 
