@@ -122,9 +122,9 @@ Keywords
 # --- Output parameters 
 - structuhdOverNetwork    : Structure with uhdOverNetwork parameters [UHDOverNetwork]
 """
-function openUhdOverNetwork(carrierFreq,samplingRate,gain;antenna="RX2",ip="192.168.10.11")
+function openUhdOverNetwork(carrierFreq,samplingRate,gain;antenna="RX2",addr="192.168.10.11")
     # --- Create the Sockets 
-    sockets = initSockets(ip);
+    sockets = initSockets(addr);
     # --- Create the initial configuration based on input parameters 
     rx    = UHDOverNetworkRx(
         sockets,
@@ -146,7 +146,7 @@ function openUhdOverNetwork(carrierFreq,samplingRate,gain;antenna="RX2",ip="192.
     );
     # --- Instantiate the complete radio
     radio = UHDOverNetwork(
-                           ip,
+                           addr,
                            rx,
                            tx
                           );

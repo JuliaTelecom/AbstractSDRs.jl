@@ -6,7 +6,6 @@ using Printf
 using Sockets 
 using Reexport
 
-
 # ----------------------------------------------------
 # --- UHD Bindings 
 # ---------------------------------------------------- 
@@ -101,7 +100,7 @@ function openSDR(name,tul...;key...)
         suppKwargs = [:args];
         radio = openUHD(tul...;parseKeyword(key,suppKwargs)...);
     elseif (nameL == "uhdovernetwork" || nameL == "e310")
-        suppKwargs = [:ip];
+        suppKwargs = [:addr];
         radio = openUhdOverNetwork(tul...;parseKeyword(key,suppKwargs)...);
     else 
         @error "Unknown or unsupported SDR device";
@@ -113,8 +112,26 @@ function openSDR(name::Symbol,tul...;key...)
         suppKwargs = [:args];
         radio = openUHD(tul...;parseKeyword(key,suppKwargs)...);
     elseif (name == :uhdovernetwork || name == :e310)
-        suppKwargs = [:ip];
-        radio = openUhdOverNetwork(tul...;parseKeyword(key,suppKwargs)...);
+        suppKwargs = [:addr];
+        keyOut = parseKeyword(key,suppKwargs);
+        if haskey(key,:args)
+            # For UHDBindings IP address is set as args="addr=192.168.10.14". We want to support this
+            # We look at args and find addr inside and extract the IP address. Then create a dict entry
+            str = key[:args];
+            ind = findfirst("addr",str)[1];
+            # If addr flag is here, convert it into IP 
+            if ~isnothing(ind)
+                # --- Getting end of parameter
+                indV = findfirst(",",str[ind:end]);
+                # --- If last parameters, get the compelte string
+                (isnothing(indV)) ? indF = length(str) : indF = indV[1];;
+                # --- Extract ip address 
+                ip = str[ind+5:indF];
+                # --- Create a new input in dictionnary
+                keyOut[:addr] = ip;
+            end
+        end
+        radio = openUhdOverNetwork(tul...;keyOut...);
     elseif (name == :radiosim)
         suppKwargs = [:packetSize;:scaleSleep];
         radio = openRadioSim(tul...;parseKeyword(key,suppKwargs)...);
