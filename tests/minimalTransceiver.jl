@@ -78,6 +78,7 @@ function main(mode,carrierFreq, samplingRate, gain, nbSamples)
 					sendMD(rtcSocket, radio.rx);
 				end
 			end
+			print(radio)
 		end
 		while (true)
 			if mode == :rx 

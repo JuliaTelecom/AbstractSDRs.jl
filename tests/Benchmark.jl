@@ -28,7 +28,7 @@ function main(radio,samplingRate,mode=:rx)
 	print(radio);
 	# --- Init parameters 
 	# Get the radio size for buffer pre-allocation
-	nbSamples 		= radio.packetSize;
+	nbSamples 		= 1*radio.rx.packetSize;
 	# We will get complex samples from recv! method
 	# Fill with random value, as it will be overwritten (and not zero for tx benchmark)
 	sig		  = randn(Complex{Cfloat},nbSamples); 
@@ -52,6 +52,7 @@ function main(radio,samplingRate,mode=:rx)
 			nS		+= p;
 		elseif mode == :tx
 			p = send(sig,radio,true;maxNumSamp=nbBuffer);
+			nS += p;
 		end
 		# --- Interruption 
 		if nS > nbBuffer
@@ -61,7 +62,7 @@ function main(radio,samplingRate,mode=:rx)
 	# --- Last timeStamp and rate 
 	timeFinal = time();
 	# --- Getting effective rate 
-	radioRate	  = radio.samplingRate;
+	radioRate	  = radio.rx.samplingRate;
     effectiveRate = getRate(timeInit,timeFinal,nS);
 	# --- Free all and return
 	return (radioRate,effectiveRate);
@@ -114,7 +115,7 @@ function test(radioName,samplingRate)
 end	
 
 struct Res 
-	radio::String;
+	radio::Symbol;
 	carrierFreq::Float64;
 	gain::Float64;	
 	rateVect::Array{Float64};
@@ -127,7 +128,7 @@ export Res
 function bench(mode=:rx)
 	# --- Set priority 
 	# --- Configuration
-	radioName 		= "e310";
+	radioName 		= :radiosim;
 	carrierFreq		= 770e6;		
 	gain			= 50.0; 
 	# rateVect	= [1e3;100e3;500e3;1e6:1e6:8e6;16e6;32e6;64e6;80e6;100e6;200e6];

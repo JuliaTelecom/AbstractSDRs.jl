@@ -68,5 +68,5 @@ function plotPerf(strucRes);
 end
 
 plotlyjs();
-plt = plotPerf(res);
-display(plt)
+# plt = plotPerf(res);
+# display(plt)

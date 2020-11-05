@@ -14,6 +14,9 @@ using Sockets
 using ZMQ
 using Printf
 
+# --- Print radio config
+include("Printing.jl");
+using .Printing
 
 # --- Method extension 
 import Sockets:send;
@@ -25,7 +28,6 @@ import Sockets:close;
 
 # --- Symbol exportation 
 export openUhdOverNetwork;
-export openUhdOverNetworkRx;
 export close;
 export updateCarrierFreq!;
 export updateSamplingRate!;
@@ -52,7 +54,7 @@ mutable struct MD
     fracPart::Cdouble;
 	error::Int32;
 end
-mutable struct UHDOverNetwork 
+mutable struct UHDOverNetworkRx 
     sockets::SocketsuhdOverNetwork;
 	carrierFreq::Float64;
 	samplingRate::Float64;
@@ -61,6 +63,22 @@ mutable struct UHDOverNetwork
     packetSize::Csize_t;
     released::Int;
 end
+mutable struct UHDOverNetworkTx 
+    sockets::SocketsuhdOverNetwork;
+	carrierFreq::Float64;
+	samplingRate::Float64;
+	gain::Union{Int,Float64}; 
+	antenna::String;
+    packetSize::Csize_t;
+    released::Int;
+end
+mutable struct UHDOverNetwork
+    radio::String;
+    rx::UHDOverNetworkRx;
+    tx::UHDOverNetworkTx;
+end
+
+
 export UHDOverNetwork;
 
 
@@ -108,7 +126,7 @@ function openUhdOverNetwork(carrierFreq,samplingRate,gain;antenna="RX2",ip="192.
     # --- Create the Sockets 
     sockets = initSockets(ip);
     # --- Create the initial configuration based on input parameters 
-    uhdOverNetwork    = UHDOverNetwork(
+    rx    = UHDOverNetworkRx(
         sockets,
         carrierFreq,
         samplingRate,
@@ -116,28 +134,43 @@ function openUhdOverNetwork(carrierFreq,samplingRate,gain;antenna="RX2",ip="192.
         antenna,
         0,
         0
-    )
+    );
+    tx    = UHDOverNetworkTx(
+        sockets,
+        carrierFreq,
+        samplingRate,
+        gain,
+        antenna,
+        0,
+        0
+    );
+    # --- Instantiate the complete radio
+    radio = UHDOverNetwork(
+                           ip,
+                           rx,
+                           tx
+                          );
     # --- Update the radio based on input parameters 
-    updateCarrierFreq!(uhdOverNetwork,carrierFreq);
-    updateSamplingRate!(uhdOverNetwork,samplingRate);
-    updateGain!(uhdOverNetwork,gain);
+    updateCarrierFreq!(radio,carrierFreq);
+    updateSamplingRate!(radio,samplingRate);
+    updateGain!(radio,gain);
     # Get socket size 
-    requestConfig!(uhdOverNetwork);
+    requestConfig!(radio);
     # --- Print the configuration 
-    print(uhdOverNetwork);
+    print(radio);
     # --- Return the final object
-    return uhdOverNetwork;
+    return radio;
 end
 
-function Base.close(uhdOverNetwork::UHDOverNetwork)
+function Base.close(radio::UHDOverNetwork)
     # @info "coucou"
     # --- We close here all the related sockets
-    close(uhdOverNetwork.sockets.rtcSocket);
-    close(uhdOverNetwork.sockets.rttSocket);
-    close(uhdOverNetwork.sockets.brSocket);
+    close(radio.rx.sockets.rtcSocket);
+    close(radio.rx.sockets.rttSocket);
+    close(radio.rx.sockets.brSocket);
 end
 
-sendConfig(uhdOverNetwork::UHDOverNetwork,mess) = send(uhdOverNetwork.sockets.rtcSocket,mess)
+sendConfig(uhdOverNetwork::UHDOverNetwork,mess) = send(uhdOverNetwork.rx.sockets.rtcSocket,mess)
 
 
 function updateCarrierFreq!(uhdOverNetwork::UHDOverNetwork,carrierFreq)
@@ -149,8 +182,9 @@ function updateCarrierFreq!(uhdOverNetwork::UHDOverNetwork,carrierFreq)
     # --- Get the effective radio configuration 
     config = getuhdOverNetworkConfig(uhdOverNetwork);
     # --- Update the uhdOverNetwork object based on real radio config
-    uhdOverNetwork.carrierFreq = config.carrierFreq;
-    return uhdOverNetwork.carrierFreq;
+    uhdOverNetwork.rx.carrierFreq = config.carrierFreq;
+    uhdOverNetwork.tx.carrierFreq = config.carrierFreq;
+    return uhdOverNetwork.rx.carrierFreq;
 end
 
 function updateSamplingRate!(uhdOverNetwork::UHDOverNetwork,samplingRate)
@@ -161,8 +195,9 @@ function updateSamplingRate!(uhdOverNetwork::UHDOverNetwork,samplingRate)
     # --- Get the effective radio configuration 
     config = getuhdOverNetworkConfig(uhdOverNetwork);
     # --- Update the uhdOverNetwork object based on real radio config
-    uhdOverNetwork.samplingRate = config.samplingRate;
-    return uhdOverNetwork.samplingRate;
+    uhdOverNetwork.rx.samplingRate = config.samplingRate;
+    uhdOverNetwork.tx.samplingRate = config.samplingRate;
+    return uhdOverNetwork.rx.samplingRate;
 end
 
 function updateGain!(uhdOverNetwork::UHDOverNetwork,gain)
@@ -173,8 +208,9 @@ function updateGain!(uhdOverNetwork::UHDOverNetwork,gain)
     # --- Get the effective radio configuration 
     config = getuhdOverNetworkConfig(uhdOverNetwork);
     # --- Update the uhdOverNetwork object based on real radio config
-    uhdOverNetwork.gain = config.gain;
-    return uhdOverNetwork.gain;
+    uhdOverNetwork.rx.gain = config.gain;
+    uhdOverNetwork.tx.gain = config.gain;
+    return uhdOverNetwork.rx.gain;
 end
 
 
@@ -185,7 +221,8 @@ function requestConfig!(uhdOverNetwork::UHDOverNetwork);
     sendConfig(uhdOverNetwork,strF);
     # --- Get the effective radio configuration 
     config = getuhdOverNetworkConfig(uhdOverNetwork);    
-    uhdOverNetwork.packetSize = config.packetSize;
+    uhdOverNetwork.rx.packetSize = config.packetSize;
+    uhdOverNetwork.tx.packetSize = config.packetSize;
 end
 
 function setRxMode(uhdOverNetwork::UHDOverNetwork)
@@ -193,7 +230,7 @@ function setRxMode(uhdOverNetwork::UHDOverNetwork)
     strF        = "Dict(:mode=>:rx);";
     # --- Send the command 
     sendConfig(uhdOverNetwork,strF);
-    receiver = recv(uhdOverNetwork.sockets.rtcSocket);
+    receiver = recv(uhdOverNetwork.rx.sockets.rtcSocket);
 end
 function recv(uhdOverNetwork::UHDOverNetwork,packetSize)
     # --- Create container 
@@ -224,9 +261,9 @@ function recv!(sig::Vector{Complex{Cfloat}},uhdOverNetwork::UHDOverNetwork;packe
 	while !filled 
 		# --- Get a buffer: We should have radio.packetSize or less 
 		# radio.packetSize is the complex size, so x2
-		(posT+uhdOverNetwork.packetSize> packetSize) ? n = packetSize - posT : n = uhdOverNetwork.packetSize;
+		(posT+uhdOverNetwork.rx.packetSize> packetSize) ? n = packetSize - posT : n = uhdOverNetwork.rx.packetSize;
         # --- UDP recv. This allocs. This is bad. No idea how to use prealloc pointer without rewriting the stack.
-        tmp = reinterpret(Complex{Cfloat},recv(uhdOverNetwork.sockets.brSocket));
+        tmp = reinterpret(Complex{Cfloat},recv(uhdOverNetwork.rx.sockets.brSocket));
         sig[posT .+ (1:n)] .= @view tmp[1:n]; 
 		# --- Update counters 
 		posT += n; 
@@ -242,7 +279,7 @@ function setTxMode(uhdOverNetwork::UHDOverNetwork)
     strF        = "Dict(:mode=>:tx);";
     # --- Send the command 
     sendConfig(uhdOverNetwork,strF);
-    receiver = recv(uhdOverNetwork.sockets.rtcSocket);
+    receiver = recv(uhdOverNetwork.rx.sockets.rtcSocket);
 end
 function send(sig::Vector{Complex{Cfloat}},uhdOverNetwork::UHDOverNetwork,cyclic=false;maxNumSamp=nothing)
     # --- Setting radio in Tx mode 
@@ -254,9 +291,9 @@ function send(sig::Vector{Complex{Cfloat}},uhdOverNetwork::UHDOverNetwork,cyclic
 		# It turns to false in case of interruption or cyclic to false 
         while (true)
             # --- Wait for RTT
-            rtt = ZMQ.recv(uhdOverNetwork.sockets.rttSocket);
+            rtt = ZMQ.recv(uhdOverNetwork.tx.sockets.rttSocket);
             # --- Sending data to Host 
-            ZMQ.send(uhdOverNetwork.sockets.rttSocket,sig);
+            ZMQ.send(uhdOverNetwork.tx.sockets.rttSocket,sig);
             # --- Update counter 
             nS += it; 
 			# --- Detection of cyclic mode 
@@ -277,15 +314,17 @@ end
 
 
 function getuhdOverNetworkConfig(uhdOverNetwork::UHDOverNetwork)
-    receiver = recv(uhdOverNetwork.sockets.rtcSocket);
+    receiver = recv(uhdOverNetwork.rx.sockets.rtcSocket);
     res =  Meta.parse(String(receiver))
     config = eval(res);
     return Configuration(config...);
 end
 
 function Base.print(uhdOverNetwork::UHDOverNetwork)
-    strF  = @sprintf(" Carrier Frequency: %2.3f MHz\n Sampling Frequency: %2.3f MHz\n Rx Gain: %2.2f dB\n",uhdOverNetwork.carrierFreq/1e6,uhdOverNetwork.samplingRate/1e6,uhdOverNetwork.gain);
-    @info "Current uhdOverNetwork Configuration in Rx mode\n$strF"; 
+    strF  = @sprintf(" Carrier Frequency: %2.3f MHz\n Sampling Frequency: %2.3f MHz\n Rx Gain: %2.2f dB\n",uhdOverNetwork.rx.carrierFreq/1e6,uhdOverNetwork.rx.samplingRate/1e6,uhdOverNetwork.rx.gain);
+    @inforx "Current uhdOverNetwork Configuration in Rx mode\n$strF"; 
+    strF  = @sprintf(" Carrier Frequency: %2.3f MHz\n Sampling Frequency: %2.3f MHz\n Rx Gain: %2.2f dB\n",uhdOverNetwork.tx.carrierFreq/1e6,uhdOverNetwork.tx.samplingRate/1e6,uhdOverNetwork.tx.gain);
+    @infotx "Current uhdOverNetwork Configuration in Tx mode\n$strF"; 
 end
 
 
@@ -295,7 +334,7 @@ function getMD(uhdOverNetwork::UHDOverNetwork)
     # --- Send the command 
     sendConfig(uhdOverNetwork,strF);
     # --- Get the MD back 
-    receiver = recv(uhdOverNetwork.sockets.rtcSocket);
+    receiver = recv(uhdOverNetwork.rx.sockets.rtcSocket);
     res =  Meta.parse(String(receiver))
     # --- Convert to a MD structure 
     md  = eval(res)
