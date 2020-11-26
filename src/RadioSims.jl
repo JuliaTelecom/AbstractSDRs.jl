@@ -120,11 +120,18 @@ function updateSamplingRate!(radio::RadioSim,samplingRate);
 end
 
 
-function Base.print(radio::RadioSim);
-    strF  = @sprintf(" Carrier Frequency: %2.3f MHz\n Sampling Frequency: %2.3f MHz\n Rx Gain: %2.2f dB\n",radio.rx.carrierFreq/1e6,radio.rx.samplingRate/1e6,radio.rx.gain);
+function Base.print(rx::RadioSimRx);
+    strF  = @sprintf(" Carrier Frequency: %2.3f MHz\n Sampling Frequency: %2.3f MHz\n Rx Gain: %2.2f dB\n",rx.carrierFreq/1e6,rx.samplingRate/1e6,rx.gain);
     @inforx "Current Simulated Radio Configuration in Rx mode\n$strF"; 
 end
-
+function Base.print(tx::RadioSimTx);
+    strF  = @sprintf(" Carrier Frequency: %2.3f MHz\n Sampling Frequency: %2.3f MHz\n Rx Gain: %2.2f dB\n",tx.carrierFreq/1e6,tx.samplingRate/1e6,tx.gain);
+    @inforx "Current Simulated Radio Configuration in Rx mode\n$strF"; 
+end
+function Base.print(radio::RadioSim)
+    print(radio.rx);
+    print(radio.tx);
+end
 
 function recv(radio::RadioSim,packetSize)
     if packetSize ≤ radio.rx.packetSize 
