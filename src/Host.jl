@@ -281,33 +281,65 @@ function setTxMode(uhdOverNetwork::UHDOverNetwork)
     sendConfig(uhdOverNetwork,strF);
     receiver = recv(uhdOverNetwork.rx.sockets.rtcSocket);
 end
+function setTxBufferMode(uhdOverNetwork::UHDOverNetwork)
+    # --- Create char with command to be transmitted 
+    strF        = "Dict(:mode=>:txbuffer);";
+    # --- Send the command 
+    sendConfig(uhdOverNetwork,strF);
+    receiver = recv(uhdOverNetwork.rx.sockets.rtcSocket);
+end
+
+
+
+function sendBuffer(buffer::Vector{Complex{Cfloat}},uhdOverNetwork::UHDOverNetwork)
+  # --- Create char with command to be transmitted 
+    strF        = "Dict(:buffer:=>$buffer);";
+    # --- Send the command 
+    sendConfig(uhdOverNetwork,strF);
+    config = getuhdOverNetworkConfig(uhdOverNetwork);    
+    return config;
+end
+
+
+
 function send(sig::Vector{Complex{Cfloat}},uhdOverNetwork::UHDOverNetwork,cyclic=false;maxNumSamp=nothing)
     # --- Setting radio in Tx mode 
     # setTxMode(uhdOverNetwork);
     nS  = 0;
     it  = length(sig);
-    try 
-		# --- First while loop is to handle cyclic transmission 
-		# It turns to false in case of interruption or cyclic to false 
-        while (true)
-            # --- Wait for RTT
-            rtt = ZMQ.recv(uhdOverNetwork.tx.sockets.rttSocket);
-            # --- Sending data to Host 
-            ZMQ.send(uhdOverNetwork.tx.sockets.rttSocket,sig);
-            # --- Update counter 
-            nS += it; 
-			# --- Detection of cyclic mode 
-            (maxNumSamp !== nothing && nS > maxNumSamp) && break
-			(cyclic == false ) && break 
-			# --- Forcing refresh
-			yield();
-		end 
-	catch e;
-		# --- Interruption handling
-		print(e);
-		print("\n");
-        @info "Interruption detected";
-        rethrow(e)
+    if cyclic == true 
+        # ----------------------------------------------------
+        # --- We handle Tx through metadata 
+        # ---------------------------------------------------- 
+        # setTxBufferMode(uhdOverNetwork):
+        config = sendBuffer(sig,uhdOverNetwork);
+    else
+        # ----------------------------------------------------
+        # --- Using RTT socket to handle data exchange
+        # ---------------------------------------------------- 
+        try 
+            # --- First while loop is to handle cyclic transmission 
+            # It turns to false in case of interruption or cyclic to false 
+            while (true)
+                # --- Wait for RTT
+                rtt = ZMQ.recv(uhdOverNetwork.tx.sockets.rttSocket);
+                # --- Sending data to Host 
+                ZMQ.send(uhdOverNetwork.tx.sockets.rttSocket,sig);
+                # --- Update counter 
+                nS += it; 
+                # --- Detection of cyclic mode 
+                (maxNumSamp !== nothing && nS > maxNumSamp) && break
+                (cyclic == false ) && break 
+                # --- Forcing refresh
+                yield();
+            end 
+        catch e;
+            # --- Interruption handling
+            print(e);
+            print("\n");
+            @info "Interruption detected";
+            return 0;
+        end
     end
     return nS;
 end
@@ -340,5 +372,6 @@ function getMD(uhdOverNetwork::UHDOverNetwork)
     md  = eval(res)
     return md;
 end
+
 
 end
