@@ -133,7 +133,7 @@ function openSDR(name::Symbol,tul...;key...)
         end
         radio = openUhdOverNetwork(tul...;keyOut...);
     elseif (name == :radiosim)
-        suppKwargs = [:packetSize;:scaleSleep];
+        suppKwargs = [:packetSize;:scaleSleep;:buffer];
         radio = openRadioSim(tul...;parseKeyword(key,suppKwargs)...);
     else 
         @error "Unknown or unsupported SDR device";
