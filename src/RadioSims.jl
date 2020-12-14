@@ -268,7 +268,11 @@ function updatePacketSize!(radio,packetSize)
     # --- Update structure 
     radio.rx.radioSimRxWrapper.buffer =  buffer;
 end
-
+function updateBuffer!(radio,buffer) 
+    radio.rx.radioSimRxWrapper.buffer =  buffer;
+    radio.rx.radioSimRxWrapper.circularBuffer =  buffer;
+    radio.rx.radioSimRxWrapper.pointerBuffer = 0;
+end
 
 function Base.close(radio::RadioSim)
     radio = nothing;

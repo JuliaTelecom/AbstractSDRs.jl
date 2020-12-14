@@ -7,7 +7,7 @@
 # - We use a specific communication system socket 
 # - uhdOverNetwork side: a Julia script has to be launched. This script can also be modified to embed additional processing 
 
-module Host
+module SDROverNetworks
 
 # --- Module dependency 
 using Sockets 
@@ -54,7 +54,7 @@ mutable struct MD
     fracPart::Cdouble;
 	error::Int32;
 end
-mutable struct UHDOverNetworkRx 
+mutable struct SDROverNetworkRx 
     sockets::SocketsuhdOverNetwork;
 	carrierFreq::Float64;
 	samplingRate::Float64;
@@ -63,7 +63,7 @@ mutable struct UHDOverNetworkRx
     packetSize::Csize_t;
     released::Int;
 end
-mutable struct UHDOverNetworkTx 
+mutable struct SDROverNetworkTx 
     sockets::SocketsuhdOverNetwork;
 	carrierFreq::Float64;
 	samplingRate::Float64;
@@ -72,14 +72,14 @@ mutable struct UHDOverNetworkTx
     packetSize::Csize_t;
     released::Int;
 end
-mutable struct UHDOverNetwork
+mutable struct SDROverNetwork
     radio::String;
-    rx::UHDOverNetworkRx;
-    tx::UHDOverNetworkTx;
+    rx::SDROverNetworkRx;
+    tx::SDROverNetworkTx;
 end
 
 
-export UHDOverNetwork;
+export SDROverNetwork;
 
 
 function initSockets(ip::String)
@@ -120,13 +120,13 @@ Keywords
 - ip	  : uhdOverNetwork IP address
 - antenna		: Desired Antenna alias  (default "TX-RX") [String]
 # --- Output parameters 
-- structuhdOverNetwork    : Structure with uhdOverNetwork parameters [UHDOverNetwork]
+- structuhdOverNetwork    : Structure with uhdOverNetwork parameters [SDROverNetwork]
 """
 function openUhdOverNetwork(carrierFreq,samplingRate,gain;antenna="RX2",addr="192.168.10.11")
     # --- Create the Sockets 
     sockets = initSockets(addr);
     # --- Create the initial configuration based on input parameters 
-    rx    = UHDOverNetworkRx(
+    rx    = SDROverNetworkRx(
         sockets,
         carrierFreq,
         samplingRate,
@@ -135,7 +135,7 @@ function openUhdOverNetwork(carrierFreq,samplingRate,gain;antenna="RX2",addr="19
         0,
         0
     );
-    tx    = UHDOverNetworkTx(
+    tx    = SDROverNetworkTx(
         sockets,
         carrierFreq,
         samplingRate,
@@ -145,7 +145,7 @@ function openUhdOverNetwork(carrierFreq,samplingRate,gain;antenna="RX2",addr="19
         0
     );
     # --- Instantiate the complete radio
-    radio = UHDOverNetwork(
+    radio = SDROverNetwork(
                            addr,
                            rx,
                            tx
@@ -162,7 +162,7 @@ function openUhdOverNetwork(carrierFreq,samplingRate,gain;antenna="RX2",addr="19
     return radio;
 end
 
-function Base.close(radio::UHDOverNetwork)
+function Base.close(radio::SDROverNetwork)
     # @info "coucou"
     # --- We close here all the related sockets
     close(radio.rx.sockets.rtcSocket);
@@ -170,10 +170,10 @@ function Base.close(radio::UHDOverNetwork)
     close(radio.rx.sockets.brSocket);
 end
 
-sendConfig(uhdOverNetwork::UHDOverNetwork,mess) = send(uhdOverNetwork.rx.sockets.rtcSocket,mess)
+sendConfig(uhdOverNetwork::SDROverNetwork,mess) = send(uhdOverNetwork.rx.sockets.rtcSocket,mess)
 
 
-function updateCarrierFreq!(uhdOverNetwork::UHDOverNetwork,carrierFreq)
+function updateCarrierFreq!(uhdOverNetwork::SDROverNetwork,carrierFreq)
     # --- Create char with command to be transmitted 
     # strF        = "global carrierFreq = $carrierFreq";
     strF        = "Dict(:updateCarrierFreq=>$carrierFreq);";
@@ -187,7 +187,7 @@ function updateCarrierFreq!(uhdOverNetwork::UHDOverNetwork,carrierFreq)
     return uhdOverNetwork.rx.carrierFreq;
 end
 
-function updateSamplingRate!(uhdOverNetwork::UHDOverNetwork,samplingRate)
+function updateSamplingRate!(uhdOverNetwork::SDROverNetwork,samplingRate)
     # --- Create char with command to be transmitted 
     strF        = "Dict(:updateSamplingRate=>$samplingRate);";
     # --- Send the command 
@@ -200,7 +200,7 @@ function updateSamplingRate!(uhdOverNetwork::UHDOverNetwork,samplingRate)
     return uhdOverNetwork.rx.samplingRate;
 end
 
-function updateGain!(uhdOverNetwork::UHDOverNetwork,gain)
+function updateGain!(uhdOverNetwork::SDROverNetwork,gain)
     # --- Create char with command to be transmitted 
     strF        = "Dict(:updateGain=>$gain);";
     # --- Send the command 
@@ -214,7 +214,7 @@ function updateGain!(uhdOverNetwork::UHDOverNetwork,gain)
 end
 
 
-function requestConfig!(uhdOverNetwork::UHDOverNetwork);
+function requestConfig!(uhdOverNetwork::SDROverNetwork);
     # --- Create char with command to be transmitted 
     strF        = "Dict(:requestConfig=>1);";
     # --- Send the command 
@@ -225,21 +225,21 @@ function requestConfig!(uhdOverNetwork::UHDOverNetwork);
     uhdOverNetwork.tx.packetSize = config.packetSize;
 end
 
-function setRxMode(uhdOverNetwork::UHDOverNetwork)
+function setRxMode(uhdOverNetwork::SDROverNetwork)
     # --- Create char with command to be transmitted 
     strF        = "Dict(:mode=>:rx);";
     # --- Send the command 
     sendConfig(uhdOverNetwork,strF);
     receiver = recv(uhdOverNetwork.rx.sockets.rtcSocket);
 end
-function recv(uhdOverNetwork::UHDOverNetwork,packetSize)
+function recv(uhdOverNetwork::SDROverNetwork,packetSize)
     # --- Create container 
     sig = Vector{Complex{Cfloat}}(undef,packetSize);
     # --- fill the stuff 
     recv!(sig,uhdOverNetwork);
     return sig;
 end
-function recv!(sig::Vector{Complex{Cfloat}},uhdOverNetwork::UHDOverNetwork;packetSize=0,offset=0)
+function recv!(sig::Vector{Complex{Cfloat}},uhdOverNetwork::SDROverNetwork;packetSize=0,offset=0)
     # setRxMode(uhdOverNetwork);
 	# --- Defined parameters for multiple buffer reception 
 	filled		= false;
@@ -274,14 +274,14 @@ function recv!(sig::Vector{Complex{Cfloat}},uhdOverNetwork::UHDOverNetwork;packe
 end
 
 #FIXME: We have setTxMode call before each Tx. Shall we do a setRxMode before each rx frame ?
-function setTxMode(uhdOverNetwork::UHDOverNetwork)
+function setTxMode(uhdOverNetwork::SDROverNetwork)
     # --- Create char with command to be transmitted 
     strF        = "Dict(:mode=>:tx);";
     # --- Send the command 
     sendConfig(uhdOverNetwork,strF);
     receiver = recv(uhdOverNetwork.rx.sockets.rtcSocket);
 end
-function setTxBufferMode(uhdOverNetwork::UHDOverNetwork)
+function setTxBufferMode(uhdOverNetwork::SDROverNetwork)
     # --- Create char with command to be transmitted 
     strF        = "Dict(:mode=>:txbuffer);";
     # --- Send the command 
@@ -291,7 +291,7 @@ end
 
 
 
-function sendBuffer(buffer::Vector{Complex{Cfloat}},uhdOverNetwork::UHDOverNetwork)
+function sendBuffer(buffer::Vector{Complex{Cfloat}},uhdOverNetwork::SDROverNetwork)
   # --- Create char with command to be transmitted 
     strF        = "Dict(:buffer:=>$buffer);";
     # --- Send the command 
@@ -302,7 +302,7 @@ end
 
 
 
-function send(sig::Vector{Complex{Cfloat}},uhdOverNetwork::UHDOverNetwork,cyclic=false;maxNumSamp=nothing)
+function send(sig::Vector{Complex{Cfloat}},uhdOverNetwork::SDROverNetwork,cyclic=false;maxNumSamp=nothing)
     # --- Setting radio in Tx mode 
     # setTxMode(uhdOverNetwork);
     nS  = 0;
@@ -345,14 +345,14 @@ function send(sig::Vector{Complex{Cfloat}},uhdOverNetwork::UHDOverNetwork,cyclic
 end
 
 
-function getuhdOverNetworkConfig(uhdOverNetwork::UHDOverNetwork)
+function getuhdOverNetworkConfig(uhdOverNetwork::SDROverNetwork)
     receiver = recv(uhdOverNetwork.rx.sockets.rtcSocket);
     res =  Meta.parse(String(receiver))
     config = eval(res);
     return Configuration(config...);
 end
 
-function Base.print(uhdOverNetwork::UHDOverNetwork)
+function Base.print(uhdOverNetwork::SDROverNetwork)
     strF  = @sprintf(" Carrier Frequency: %2.3f MHz\n Sampling Frequency: %2.3f MHz\n Rx Gain: %2.2f dB\n",uhdOverNetwork.rx.carrierFreq/1e6,uhdOverNetwork.rx.samplingRate/1e6,uhdOverNetwork.rx.gain);
     @inforx "Current uhdOverNetwork Configuration in Rx mode\n$strF"; 
     strF  = @sprintf(" Carrier Frequency: %2.3f MHz\n Sampling Frequency: %2.3f MHz\n Rx Gain: %2.2f dB\n",uhdOverNetwork.tx.carrierFreq/1e6,uhdOverNetwork.tx.samplingRate/1e6,uhdOverNetwork.tx.gain);
@@ -360,7 +360,7 @@ function Base.print(uhdOverNetwork::UHDOverNetwork)
 end
 
 
-function getMD(uhdOverNetwork::UHDOverNetwork)
+function getMD(uhdOverNetwork::SDROverNetwork)
     # --- Create char with command to be transmitted 
     strF        = "Dict(:requestMD=>1);";
     # --- Send the command 
