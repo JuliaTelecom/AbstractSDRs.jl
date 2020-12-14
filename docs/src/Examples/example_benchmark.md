@@ -29,7 +29,7 @@ The following script allows to benchmark the effective rate from the receiver. T
 		# --- Create the radio object in function
 		carrierFreq		= 770e6;		
 		gain			= 50.0; 
-		radio			= openUHD("Rx",carrierFreq,samplingRate,gain); 
+		radio			= openSDR(:uhd,carrierFreq,samplingRate,gain); 
 		# --- Print the configuration
 		print(radio);
 		# --- Init parameters 

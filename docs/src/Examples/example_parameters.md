@@ -19,8 +19,7 @@ the radio parameters corresponds to the effective values of the radio.
 		# --- Getting all system with function calls  
 		# ---------------------------------------------------- 
 		# --- Creating the radio resource 
-		# The first parameter is for specific parameter (FPGA bitstream, IP address)
-		radio	= openUHD("Rx",carrierFreq,samplingRate,rxGain);
+		radio	= openSDR(:uhd,carrierFreq,samplingRate,rxGain);
 		# --- Display the current radio configuration
 		print(radio);
 		# --- We what to change the parameters ! 
