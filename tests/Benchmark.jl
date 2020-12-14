@@ -75,7 +75,7 @@ function test(radioName,samplingRate)
 	# --- Create the radio object in function
 	carrierFreq		= 770e6;		
 	gain			= 50.0; 
-	radio = openSDR(radioName,carrierFreq,samplingRate,gain;ip="192.168.10.12"); 
+	radio = openSDR(radioName,carrierFreq,samplingRate,gain;args="addr=192.168.10.12"); 
 	# --- Print the configuration
 	print(radio);
 	# --- Init parameters 
