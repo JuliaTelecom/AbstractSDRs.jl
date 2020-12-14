@@ -13,7 +13,6 @@ using Reexport
 @reexport using UHDBindings
 # --- Specific UHD related functions 
 export UHDBinding
-export openUHD
 
 
 # ----------------------------------------------------
@@ -35,6 +34,7 @@ include("RadioSims.jl");
 @reexport using .RadioSims
 # --- Specific simulation related function 
 export updatePacketSize!;
+export updateBuffer!;
 export RadioSim;
 
 # ----------------------------------------------------

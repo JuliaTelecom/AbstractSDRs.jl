@@ -17,6 +17,7 @@ export updateCarrierFreq!;
 export updateSamplingRate!;
 export updateGain!; 
 export updatePacketSize!;
+export updateBuffer!;
 export recv;
 export recv!;
 export send;
