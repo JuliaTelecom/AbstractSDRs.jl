@@ -12,7 +12,6 @@ import Base:close;
 
 # Symbols exportation 
 export openRadioSim;
-export close;
 export updateCarrierFreq!;
 export updateSamplingRate!;
 export updateGain!; 

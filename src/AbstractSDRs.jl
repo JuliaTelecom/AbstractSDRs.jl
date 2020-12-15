@@ -6,6 +6,9 @@ using Printf
 using Sockets 
 using Reexport
 using RTLSDR
+
+
+import Base:close;
 # ----------------------------------------------------
 # --- UHD Bindings 
 # ---------------------------------------------------- 
@@ -48,15 +51,10 @@ export RadioSim;
 # ---------------------------------------------------- 
 # --- Common framework functions 
 # Closing resources call
-""" 
-Close the SDR device and release all associated objects
-# --- Syntax 
-close(radio)
-# --- Input parameters 
-- radio : SDR device
-# --- Output parameters 
-- []
-"""
+# close(radio::RadioSim) = RadioSim.close(radio);
+# close(radio::UHDBinding) = UHDBindings.close(radio);
+# close(radio::SDROverNetwork) = SDROverNetworks.close(radio);
+# close(radio::RTLSDRBinding) = RTLSDRBindings.close(radio);
 export close;
 # recv call 
 """

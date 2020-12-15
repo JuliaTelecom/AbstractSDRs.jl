@@ -5,18 +5,35 @@ include("Printing.jl");
 using .Printing
 
 using RTLSDR 
+using Printf
+
+# Methods extension 
+import Base:close;
+
+
+# Symbols exportation 
+export openRTLSDR;
+export updateCarrierFreq!;
+export updateSamplingRate!;
+export updateGain!; 
+export recv;
+export recv!;
+export send;
+export print;
+export getError
+export RTLSDRBinding;
 
 # --- Main Rx structure 
 mutable struct RTLSDRRxWrapper
 end;
 mutable struct RTLSDRRx
-	rtlsdrrx::RTLSDRRxWrapper
-	carrierFreq::Float64;
-	samplingRate::Float64;
-	gain::Union{Int,Float64}; 
-	antenna::String;
-	packetSize::Csize_t;
-	released::Int;
+    rtlsdrrx::RTLSDRRxWrapper
+    carrierFreq::Float64;
+    samplingRate::Float64;
+    gain::Union{Int,Float64}; 
+    antenna::String;
+    packetSize::Csize_t;
+    released::Int;
 end
 
 
@@ -24,20 +41,20 @@ end
 mutable struct RTLSDRTxWrapper
 end;
 mutable struct RTLSDRTx 
-	rtlsdrrxwrapper::RTLSDRTxWrapper;
-	carrierFreq::Float64;
-	samplingRate::Float64;
-	gain::Union{Int,Float64}; 
-	antenna::String;
-	packetSize::Csize_t;
-	released::Int;
+    rtlsdrrxwrapper::RTLSDRTxWrapper;
+    carrierFreq::Float64;
+    samplingRate::Float64;
+    gain::Union{Int,Float64}; 
+    antenna::String;
+    packetSize::Csize_t;
+    released::Int;
 end
 
 # --- Complete structure 
 mutable struct RTLSDRBinding
     radio::RtlSdr;
-    rx::RadioSimRx;
-    tx::RadioSimTx;
+    rx::RTLSDRRx
+    tx::RTLSDRTx;
 end
 
 
@@ -94,7 +111,7 @@ function updateSamplingRate!(radio,samplingRate)
     return samplingRate
 end
 function updateGain!(radio,gain)
-    @warning "Analog gain update is not supported for RTLSDR";
+    @warn "Analog gain update is not supported for RTLSDR";
 end
 
 
@@ -122,8 +139,14 @@ function recv!(sig::Vector{Complex{Cfloat}},radio::RTLSDRBinding)
 end
 
 
+function close(radio::RTLSDRBinding)
+    close(radio.radio);
+    radio.rx.released = 1;
+    radio.tx.released = 1;
+end
+
 function send(sig::Vector{Complex{Cfloat}},radio::RTLSDRBinding)
-   @warntx "Unsupported send method for RTLSDR"; 
+    @warntx "Unsupported send method for RTLSDR"; 
 end
 
 

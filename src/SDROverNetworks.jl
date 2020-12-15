@@ -28,7 +28,6 @@ import Sockets:close;
 
 # --- Symbol exportation 
 export openUhdOverNetwork;
-export close;
 export updateCarrierFreq!;
 export updateSamplingRate!;
 export updateGain!;
