@@ -77,7 +77,7 @@ uuid = "6462fe0b-24de-5631-8697-dd941f90decc"
 
 [[UHDBindings]]
 deps = ["Libdl", "Printf"]
-path = "../UHDBindings"
+git-tree-sha1 = "be037488a20372e1c73a729231fe679a69f3c0bc"
 uuid = "4d90b16f-829e-4b78-80d9-fb9bcf8c06e0"
 version = "0.1.2"
 
