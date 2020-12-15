@@ -5,7 +5,7 @@ using Libdl
 using Printf
 using Sockets 
 using Reexport
-
+using RTLSDR
 # ----------------------------------------------------
 # --- UHD Bindings 
 # ---------------------------------------------------- 
@@ -14,6 +14,12 @@ using Reexport
 # --- Specific UHD related functions 
 export UHDBinding
 
+# ----------------------------------------------------
+# --- RTL-SDR bindings 
+# ---------------------------------------------------- 
+include("RTLSDRBindings.jl");
+@reexport using .RTLSDRBindings
+export RTLSDRBinding
 
 # ----------------------------------------------------
 # --- Socket System
@@ -66,6 +72,7 @@ Receive nbSamples from the SDR and fill them in the output buffer. The buffer fo
 recv(obj::SDROverNetwork,tul...) = SDROverNetwork.recv(obj,tul...);
 recv(obj::UHDBinding,tul...) = UHDBindings.recv(obj,tul...);
 recv(obj::RadioSim,tul...) = RadioSims.recv(obj,tul...);
+recv(obj::RTLSDRBinding,tul...) = RTLSDRBindings.recv(obj,tul...);
 export recv;
  
 # recv! call 
@@ -82,6 +89,7 @@ Receive from the SDR and fill them in the input buffer.
 recv!(sig,obj::SDROverNetwork,tul...) = SDROverNetwork.recv!(sig,obj,tul...);
 recv!(sig,obj::UHDBinding,tul...) = UHDBindings.recv!(sig,obj,tul...);
 recv!(sig,obj::RadioSim,tul...) = RadioSims.recv!(sig,obj,tul...);
+recv!(sig,obj::RTLSDRBinding,tul...) = RTLSDRBindings.recv!(sig,obj,tul...);
 
 
 # Send call 
@@ -100,12 +108,14 @@ send(radio,buffer,cyclic=false)
 send(sig,obj::SDROverNetwork,tul...;kwarg...) = SDROverNetwork.send(sig,obj,tul...;kwarg...);
 send(sig,obj::UHDBinding,tul...) = UHDBindings.send(sig,obj,tul...);
 send(sig,obj::RadioSim,tul...) = RadioSims.send(sig,obj,tul...);
+send(sig,obj::RTLSDRBinding,tul...) = RTLSDRBindings.send(sig,obj,tul...);
 export send
 
 # Radio API 
 updateCarrierFreq!(obj::SDROverNetwork,tul...) = SDROverNetwork.updateCarrierFreq!(obj,tul...);
 updateCarrierFreq!(obj::UHDBinding,tul...) = UHDBindings.updateCarrierFreq!(obj,tul...);
 updateCarrierFreq!(obj::RadioSim,tul...) = RadioSims.updateCarrierFreq!(obj,tul...);
+updateCarrierFreq!(obj::RTLSDRBinding,tul...) = RTLSDRBindings.updateCarrierFreq!(obj,tul...);
 export updateCarrierFreq!;
 
 """ 
@@ -121,6 +131,7 @@ updateSamplingRate!(radio,samplingRate)
 updateSamplingRate!(obj::SDROverNetwork,tul...) = SDROverNetwork.updateSamplingRate!(obj,tul...);
 updateSamplingRate!(obj::UHDBinding,tul...) = UHDBindings.updateSamplingRate!(obj,tul...);
 updateSamplingRate!(obj::RadioSim,tul...) = RadioSims.updateSamplingRate!(obj,tul...);
+updateSamplingRate!(obj::RTLSDRBinding,tul...) = RTLSDRBindings.updateSamplingRate!(obj,tul...);
 export updateSamplingRate!;
 
 """ 
@@ -137,16 +148,20 @@ updateGain!(radio,gain)
 updateGain!(obj::SDROverNetwork,tul...) = SDROverNetwork.updateGain!(obj,tul...);
 updateGain!(obj::UHDBinding,tul...) = UHDBindings.updateGain!(obj,tul...);
 updateGain!(obj::RadioSim,tul...) = RadioSims.updateGain!(obj,tul...);
+updateGain!(obj::RTLSDRBinding,tul...) = RTLSDRBindings.updateGain!(obj,tul...);
+
 export updateGain!;
 getError(obj::UHDBinding) = UHDBindings.getError(obj);
 getError(obj::RadioSim) = RadioSims.getError(obj);
 getError(obj::SDROverNetwork) = SDROverNetwork.getMD(obj)[3];
+getError(obj::RTLSDRBinding) = RTLSDRBindings.getError(obj);
 
 
 export getError;
 getTimestamp(obj::UHDBinding) = UHDBindings.getTimestamp(obj);
 getTimestamp(obj::RadioSim) = RadioSims.getTimestamp(obj);
 getTimestamp(obj::SDROverNetwork) = SDROverNetwork.getMD(obj)[1:2];
+getTimestamp(obj::RTLSDRBinding) = RTLSDRBindings.getTimestamp(obj);
 
 
 # --- Container for Radio use 
@@ -172,7 +187,7 @@ l = getSupportedSDR()
 - l : Array of symbols of supported SDRs
 """
 function getSupportedSDR()
-    return [:uhd;:sdr_over_network;:radiosim;:pluto];
+    return [:uhd;:sdr_over_network;:radiosim;:pluto;:rtlsdr];
 end
 
 """
@@ -216,8 +231,11 @@ function openSDR(name::Symbol,tul...;key...)
     elseif (name == :radiosim)
         suppKwargs = [:packetSize;:scaleSleep;:buffer];
         radio = openRadioSim(tul...;parseKeyword(key,suppKwargs)...);
+    elseif name == :rtlsdr
+        suppKwargs = [:agc_mode;:tuner_gain_mode]
+        radio = openRTLSDR(tul...;parseKeyword(key,suppKwargs)...);
     else 
-        @error "Unknown or unsupported SDR device";
+        @error "Unknown or unsupported SDR device. use getSupportedSDR() to list supported SDR backends";
     end
     return radio;
 end

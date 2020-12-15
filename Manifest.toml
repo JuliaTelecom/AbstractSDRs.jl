@@ -51,6 +51,11 @@ uuid = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 deps = ["InteractiveUtils", "Markdown", "Sockets"]
 uuid = "3fa0cd96-eef1-5676-8a61-b3b8758bbffb"
 
+[[RTLSDR]]
+git-tree-sha1 = "10eaba41c8aa147335ea3ecd6c182e9b2d8271ef"
+uuid = "71cfaeeb-f3e6-59e7-80b9-1b8c23d8f010"
+version = "0.0.1"
+
 [[Random]]
 deps = ["Serialization"]
 uuid = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
