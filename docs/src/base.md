@@ -5,5 +5,5 @@
 Modules = [AbstractSDRs]
 Pages   = ["AbstractSDRs.jl"];
 Order   = [:function, :type]
-Depth   = 0
+Depth   = 1
 ```

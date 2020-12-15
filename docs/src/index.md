@@ -1,7 +1,3 @@
-<div align="center">
-<img src="docs/src/assets/logoAbstractSDRs.png" alt="AbstractSDRs.jl" width="420">
-</div>
-
 # AbstractSDRs.jl
 
 [![](https://img.shields.io/badge/docs-stable-blue.svg)](https://JuliaTelecom.github.io/AbstractSDRs.jl/dev/index.html)

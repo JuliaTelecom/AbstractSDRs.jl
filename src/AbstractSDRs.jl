@@ -59,7 +59,7 @@ export close;
 # recv call 
 """
 Receive nbSamples from the SDR and fill them in the output buffer. The buffer format depends on the SDR backend
---- Syntax
+# --- Syntax
 - buffer = recv(radio, nbSamples)
 # --- Input parameters
 - radio : SDR object 
@@ -76,7 +76,7 @@ export recv;
 # recv! call 
 """
 Receive from the SDR and fill them in the input buffer.
---- Syntax
+# --- Syntax
 - nbSamples = recv!(sig,radio);
 # --- Input parameters
 - sig : Buffer to be filled
@@ -177,7 +177,7 @@ end
 
 """
 Returns an array of symbol which lists the supported SDR backends
---- Syntax
+# --- Syntax
 l = getSupportedSDR()
 # --- Input parameters
 -
@@ -191,7 +191,7 @@ end
 """
 Open a Software Defined Radio of backend 'type', tune accordingly based on input parameters and use the supported keywords.
 It returns a radio object, depending on the type of SDR that can be used with all AbstractSDRs supported functions
---- Syntax
+# --- Syntax
 radio = openSDR(type,carrierFreq,samplingRate,gain,antenna;key)
 # --- Input parameters
 - type  : Desired SDR type. The different supported radio format can be obtained with getSupportedSDR();

@@ -4,13 +4,13 @@
 
 # AbstractSDRs.jl
 
-[![](https://img.shields.io/badge/docs-stable-blue.svg)](https://rgerzaguet.github.io/AbstractSDRs.jl/dev/index.html)
+[![](https://img.shields.io/badge/docs-stable-blue.svg)](https://juliatelecom.github.io/AbstractSDRs.jl/dev/index.html)
 
 
 ## Purpose 
 
 This package proposes a single API to monitor different kind of Software Defined Radio.  We define several SDR backends that can be piloted by the same API. With AbstractSDRs, the following SDRs can be used 
-- All Universal Software Radio Peripheral [USRP](https://files.ettus.com/manual/), based on [UHDBindings](https://github.com/RGerzaguet/UHDBindings.jl) package
+- All Universal Software Radio Peripheral [USRP](https://files.ettus.com/manual/), based on [UHDBindings](https://github.com/JuliaTelecom/UHDBindings.jl) package
 - RTL SDR dongle, with inclusion of [RTLSDR package](https://github.com/dressel/RTLSDR.jl)
 - Any device connected to a remote PC with a network connection (for instance, Exxx USRP device) on which a Julia session works and run AbstractSDRs package.
 - The ADALM Pluto SDR, through a specific package (WIP) 
