@@ -184,10 +184,10 @@ l = getSupportedSDR()
 # --- Output parameters
 - l : Array of symbols of supported SDRs
 """
-function getSupportedSDR()
+function getSupportedSDRs()
     return [:uhd;:sdr_over_network;:radiosim;:pluto;:rtlsdr];
 end
-
+export getSupportedSDRs
 """
 Open a Software Defined Radio of backend 'type', tune accordingly based on input parameters and use the supported keywords.
 It returns a radio object, depending on the type of SDR that can be used with all AbstractSDRs supported functions
