@@ -12,10 +12,9 @@ Sockets = "6462fe0b-24de-5631-8697-dd941f90decc"
 UHDBindings = "4d90b16f-829e-4b78-80d9-fb9bcf8c06e0"
 ZMQ = "c2297ded-f4af-51ae-bb23-16f91089e4e1"
 
-
 [compat]
-julia = "1"
 RTLSDR = "0.0.1"
-Reexport = "0.2"
-ZMQ = "1.2"
+Reexport = "0.2, 1.0"
 UHDBindings = "0.1"
+ZMQ = "1.2"
+julia = "1"
