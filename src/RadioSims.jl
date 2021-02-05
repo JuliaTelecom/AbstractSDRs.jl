@@ -215,7 +215,7 @@ function recv!(sig::Vector{Complex{Cfloat}},radio::RadioSim)
             @warn "Need additionnal processing as required buffer is larger than the one in memory. Please consider to enlarge the radio packet size using updatePacketSize!";
             # --- We want larger size than stored in the object, not a good idea
             nbSeg = 1 + packetSize ÷ radio.rx.packetSize;
-            newBuff = repeat(radio.rx.radioSimRxWrapper.buffer,nbSeg);
+            newBuff = repeat(radio.rx.radioSim.buffer,nbSeg);
             # --- Everything is fine => Emulate radio time 
             usleep(radio.rx);
             # 
