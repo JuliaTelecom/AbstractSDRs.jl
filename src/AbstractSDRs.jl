@@ -63,7 +63,9 @@ export RadioSim;
 # close(radio::UHDBinding) = UHDBindings.close(radio);
 # close(radio::SDROverNetwork) = SDROverNetworks.close(radio);
 # close(radio::RTLSDRBinding) = RTLSDRBindings.close(radio);
-export close;
+#  close(obj::PlutoSDR) = AdalmPluto.close(obj);
+#  export close;
+
 # recv call
 """
 Receive nbSamples from the SDR and fill them in the output buffer. The buffer format depends on the SDR backend
