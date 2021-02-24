@@ -2,7 +2,7 @@
 
 [[AdalmPluto]]
 deps = ["Pkg", "Reexport", "Test"]
-git-tree-sha1 = "1d3bfd94dc1508fac4344bb39a10629e8d966a60"
+git-tree-sha1 = "40b94a63a409926e68ae4d82787d0f1fc0eee3e2"
 repo-rev = "main"
 repo-url = "https://github.com/JuliaTelecom/AdalmPluto.jl"
 uuid = "af34ca7c-e544-47d5-a6fe-72495f08728e"
@@ -110,7 +110,13 @@ uuid = "c2297ded-f4af-51ae-bb23-16f91089e4e1"
 version = "1.2.1"
 
 [[ZeroMQ_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
-git-tree-sha1 = "bba617292e040408cb72baa03c20f43583bf239f"
+deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg", "libsodium_jll"]
+git-tree-sha1 = "74a74a3896b63980734cc876da8a103454559fe8"
 uuid = "8f1865be-045e-5c20-9c9f-bfbfb0764568"
-version = "4.3.2+5"
+version = "4.3.2+6"
+
+[[libsodium_jll]]
+deps = ["Libdl", "Pkg"]
+git-tree-sha1 = "7127f5f40332ccfa43ee07dcd0c4d81a27d9bb23"
+uuid = "a9144af2-ca23-56d9-984f-0d03f7b5ccf8"
+version = "1.0.18+1"
