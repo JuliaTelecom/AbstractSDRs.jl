@@ -6,6 +6,7 @@ git-tree-sha1 = "7e9672f0653b2d6875b477075cebb78afe163266"
 repo-rev = "main"
 repo-url = "https://github.com/JuliaTelecom/AdalmPluto.jl"
 uuid = "af34ca7c-e544-47d5-a6fe-72495f08728e"
+version = "0.1.0"
 
 [[Artifacts]]
 deps = ["Pkg"]
