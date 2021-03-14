@@ -67,7 +67,7 @@ Receive nbSamples from the SDR and fill them in the output buffer. The buffer fo
 # --- Output parameters
 - buffer : Output buffer from the radio filled with nbSamples samples
 """
-recv(obj::SDROverNetwork,tul...) = SDROverNetwork.recv(obj,tul...);
+recv(obj::SDROverNetwork,tul...) = SDROverNetworks.recv(obj,tul...);
 recv(obj::UHDBinding,tul...) = UHDBindings.recv(obj,tul...);
 recv(obj::RadioSim,tul...) = RadioSims.recv(obj,tul...);
 recv(obj::RTLSDRBinding,tul...) = RTLSDRBindings.recv(obj,tul...);
