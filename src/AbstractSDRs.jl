@@ -84,7 +84,7 @@ Receive from the SDR and fill them in the input buffer.
 # --- Output parameters
 - nbSamples : Number of samples filled 
 """
-recv!(sig,obj::SDROverNetwork,tul...) = SDROverNetwork.recv!(sig,obj,tul...);
+recv!(sig,obj::SDROverNetwork,tul...) = SDROverNetworks.recv!(sig,obj,tul...);
 recv!(sig,obj::UHDBinding,tul...) = UHDBindings.recv!(sig,obj,tul...);
 recv!(sig,obj::RadioSim,tul...) = RadioSims.recv!(sig,obj,tul...);
 recv!(sig,obj::RTLSDRBinding,tul...) = RTLSDRBindings.recv!(sig,obj,tul...);
@@ -103,14 +103,14 @@ send(radio,buffer,cyclic=false)
 - nbEch 	: Number of samples effectively send [Csize_t]. It corresponds to the number of complex samples sent.
 """
 
-send(sig,obj::SDROverNetwork,tul...;kwarg...) = SDROverNetwork.send(sig,obj,tul...;kwarg...);
+send(sig,obj::SDROverNetwork,tul...;kwarg...) = SDROverNetworks.send(sig,obj,tul...;kwarg...);
 send(sig,obj::UHDBinding,tul...) = UHDBindings.send(sig,obj,tul...);
 send(sig,obj::RadioSim,tul...) = RadioSims.send(sig,obj,tul...);
 send(sig,obj::RTLSDRBinding,tul...) = RTLSDRBindings.send(sig,obj,tul...);
 export send
 
 # Radio API 
-updateCarrierFreq!(obj::SDROverNetwork,tul...) = SDROverNetwork.updateCarrierFreq!(obj,tul...);
+updateCarrierFreq!(obj::SDROverNetwork,tul...) = SDROverNetworks.updateCarrierFreq!(obj,tul...);
 updateCarrierFreq!(obj::UHDBinding,tul...) = UHDBindings.updateCarrierFreq!(obj,tul...);
 updateCarrierFreq!(obj::RadioSim,tul...) = RadioSims.updateCarrierFreq!(obj,tul...);
 updateCarrierFreq!(obj::RTLSDRBinding,tul...) = RTLSDRBindings.updateCarrierFreq!(obj,tul...);
@@ -126,7 +126,7 @@ updateSamplingRate!(radio,samplingRate)
 # --- Output parameters 
 - 
 """
-updateSamplingRate!(obj::SDROverNetwork,tul...) = SDROverNetwork.updateSamplingRate!(obj,tul...);
+updateSamplingRate!(obj::SDROverNetwork,tul...) = SDROverNetworks.updateSamplingRate!(obj,tul...);
 updateSamplingRate!(obj::UHDBinding,tul...) = UHDBindings.updateSamplingRate!(obj,tul...);
 updateSamplingRate!(obj::RadioSim,tul...) = RadioSims.updateSamplingRate!(obj,tul...);
 updateSamplingRate!(obj::RTLSDRBinding,tul...) = RTLSDRBindings.updateSamplingRate!(obj,tul...);
@@ -143,7 +143,7 @@ updateGain!(radio,gain)
 # --- Output parameters 
 - 
 """
-updateGain!(obj::SDROverNetwork,tul...) = SDROverNetwork.updateGain!(obj,tul...);
+updateGain!(obj::SDROverNetwork,tul...) = SDROverNetworks.updateGain!(obj,tul...);
 updateGain!(obj::UHDBinding,tul...) = UHDBindings.updateGain!(obj,tul...);
 updateGain!(obj::RadioSim,tul...) = RadioSims.updateGain!(obj,tul...);
 updateGain!(obj::RTLSDRBinding,tul...) = RTLSDRBindings.updateGain!(obj,tul...);
@@ -151,14 +151,14 @@ updateGain!(obj::RTLSDRBinding,tul...) = RTLSDRBindings.updateGain!(obj,tul...);
 export updateGain!;
 getError(obj::UHDBinding) = UHDBindings.getError(obj);
 getError(obj::RadioSim) = RadioSims.getError(obj);
-getError(obj::SDROverNetwork) = SDROverNetwork.getMD(obj)[3];
+getError(obj::SDROverNetwork) = SDROverNetworks.getMD(obj)[3];
 getError(obj::RTLSDRBinding) = RTLSDRBindings.getError(obj);
 
 
 export getError;
 getTimestamp(obj::UHDBinding) = UHDBindings.getTimestamp(obj);
 getTimestamp(obj::RadioSim) = RadioSims.getTimestamp(obj);
-getTimestamp(obj::SDROverNetwork) = SDROverNetwork.getMD(obj)[1:2];
+getTimestamp(obj::SDROverNetwork) = SDROverNetworks.getMD(obj)[1:2];
 getTimestamp(obj::RTLSDRBinding) = RTLSDRBindings.getTimestamp(obj);
 
 
