@@ -4,6 +4,7 @@ authors = ["Robin Gerzaguet <robin.gerzaguet@irisa.fr>"]
 version = "0.1.0"
 
 [deps]
+AdalmPluto = "af34ca7c-e544-47d5-a6fe-72495f08728e"
 Libdl = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 RTLSDR = "71cfaeeb-f3e6-59e7-80b9-1b8c23d8f010"
@@ -17,4 +18,4 @@ RTLSDR = "0.0.1"
 Reexport = "0.2, 1.0"
 UHDBindings = "0.1"
 ZMQ = "1.2"
-julia = "1"
+julia = "1.5"
