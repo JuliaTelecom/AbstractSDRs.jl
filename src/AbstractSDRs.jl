@@ -1,69 +1,79 @@
 module AbstractSDRs
 
-# --- Define core module definitions 
-using Libdl 
+# --- Define core module definitions
+using Libdl
 using Printf
-using Sockets 
+using Sockets
 using Reexport
 using RTLSDR
 
 
 import Base:close;
 # ----------------------------------------------------
-# --- UHD Bindings 
-# ---------------------------------------------------- 
-# --- 
+# --- UHD Bindings
+# ----------------------------------------------------
+# ---
 @reexport using UHDBindings
-# --- Specific UHD related functions 
+# --- Specific UHD related functions
 export UHDBinding
 
 # ----------------------------------------------------
-# --- RTL-SDR bindings 
-# ---------------------------------------------------- 
+# --- UHD Bindings
+# ----------------------------------------------------
+# ---
+@reexport using AdalmPluto
+export AdalmPluto;
+export updateGainMode!;
+
+# ----------------------------------------------------
+# --- RTL-SDR bindings
+# ----------------------------------------------------
 include("RTLSDRBindings.jl");
 @reexport using .RTLSDRBindings
 export RTLSDRBinding
 
 # ----------------------------------------------------
 # --- Socket System
-# ---------------------------------------------------- 
-# --- Create and load module to pilot E310 devices 
-# To control this device we create a pure Socket based system 
-# for which the AbstractSDRs package will help to bind the utils 
+# ----------------------------------------------------
+# --- Create and load module to pilot E310 devices
+# To control this device we create a pure Socket based system
+# for which the AbstractSDRs package will help to bind the utils
 include("SDROverNetworks.jl");
 @reexport using .SDROverNetworks
-# --- Specific E310 related functions 
+# --- Specific E310 related functions
 export SDROverNetwork;
 
 # ----------------------------------------------------
-# --- Simulation Radio 
-# ---------------------------------------------------- 
+# --- Simulation Radio
+# ----------------------------------------------------
 # --- Create and module to emulate a radio device without any actual radio connected
 include("RadioSims.jl");
 @reexport using .RadioSims
-# --- Specific simulation related function 
+# --- Specific simulation related function
 export updatePacketSize!;
 export updateBuffer!;
 export RadioSim;
 
 # ----------------------------------------------------
 # --- Setting all methods using dispatch
-# ---------------------------------------------------- 
-# --- Common framework functions 
+# ----------------------------------------------------
+# --- Common framework functions
 # Closing resources call
 # close(radio::RadioSim) = RadioSim.close(radio);
 # close(radio::UHDBinding) = UHDBindings.close(radio);
 # close(radio::SDROverNetwork) = SDROverNetworks.close(radio);
 # close(radio::RTLSDRBinding) = RTLSDRBindings.close(radio);
-export close;
-# recv call 
+#  close(obj::PlutoSDR) = AdalmPluto.close(obj);
+#  export close;
+
+# recv call
 """
 Receive nbSamples from the SDR and fill them in the output buffer. The buffer format depends on the SDR backend
 # --- Syntax
 - buffer = recv(radio, nbSamples)
 # --- Input parameters
-- radio : SDR object 
-- nbSamples : Desired number of samples 
+- radio : SDR object
+- nbSamples : Desired number of samples
 # --- Output parameters
 - buffer : Output buffer from the radio filled with nbSamples samples
 """
@@ -71,9 +81,10 @@ recv(obj::SDROverNetwork,tul...) = SDROverNetworks.recv(obj,tul...);
 recv(obj::UHDBinding,tul...) = UHDBindings.recv(obj,tul...);
 recv(obj::RadioSim,tul...) = RadioSims.recv(obj,tul...);
 recv(obj::RTLSDRBinding,tul...) = RTLSDRBindings.recv(obj,tul...);
+recv(obj::PlutoSDR,tul...) = AdalmPluto.recv(obj,tul...);
 export recv;
- 
-# recv! call 
+
+# recv! call
 """
 Receive from the SDR and fill them in the input buffer.
 # --- Syntax
@@ -82,24 +93,25 @@ Receive from the SDR and fill them in the input buffer.
 - sig : Buffer to be filled
 - radio : SDR device
 # --- Output parameters
-- nbSamples : Number of samples filled 
+- nbSamples : Number of samples filled
 """
 recv!(sig,obj::SDROverNetwork,tul...) = SDROverNetworks.recv!(sig,obj,tul...);
 recv!(sig,obj::UHDBinding,tul...) = UHDBindings.recv!(sig,obj,tul...);
 recv!(sig,obj::RadioSim,tul...) = RadioSims.recv!(sig,obj,tul...);
 recv!(sig,obj::RTLSDRBinding,tul...) = RTLSDRBindings.recv!(sig,obj,tul...);
+recv!(sig,obj::PlutoSDR,tul...) = AdalmPluto.recv!(sig,obj,tul...);
 
 
-# Send call 
-""" 
+# Send call
+"""
 Send a buffer though the radio device. It is possible to force a cyclic buffer send (the radio uninterruply send the same buffer) by setting the cyclic parameter to true
-# --- Syntax 
+# --- Syntax
 send(radio,buffer,cyclic=false)
-# --- Input parameters 
+# --- Input parameters
 - radio	  	: SDR device
-- buffer 	: Buffer to be send 
+- buffer 	: Buffer to be send
 - cyclic 	: Send same buffer multiple times (default false) [Bool]
-# --- Output parameters 
+# --- Output parameters
 - nbEch 	: Number of samples effectively send [Csize_t]. It corresponds to the number of complex samples sent.
 """
 
@@ -114,39 +126,42 @@ updateCarrierFreq!(obj::SDROverNetwork,tul...) = SDROverNetworks.updateCarrierFr
 updateCarrierFreq!(obj::UHDBinding,tul...) = UHDBindings.updateCarrierFreq!(obj,tul...);
 updateCarrierFreq!(obj::RadioSim,tul...) = RadioSims.updateCarrierFreq!(obj,tul...);
 updateCarrierFreq!(obj::RTLSDRBinding,tul...) = RTLSDRBindings.updateCarrierFreq!(obj,tul...);
+updateCarrierFreq!(obj::PlutoSDR,tul...) = AdalmPluto.updateCarrierFreq!(obj,tul...);
 export updateCarrierFreq!;
 
-""" 
-Update sampling rate of current radio device, and update radio object with the new obtained sampling frequency. 
-# --- Syntax 
+"""
+Update sampling rate of current radio device, and update radio object with the new obtained sampling frequency.
+# --- Syntax
 updateSamplingRate!(radio,samplingRate)
-# --- Input parameters 
+# --- Input parameters
 - radio	  : SDR device
-- samplingRate	: New desired sampling rate 
-# --- Output parameters 
-- 
+- samplingRate	: New desired sampling rate
+# --- Output parameters
+-
 """
 updateSamplingRate!(obj::SDROverNetwork,tul...) = SDROverNetworks.updateSamplingRate!(obj,tul...);
 updateSamplingRate!(obj::UHDBinding,tul...) = UHDBindings.updateSamplingRate!(obj,tul...);
 updateSamplingRate!(obj::RadioSim,tul...) = RadioSims.updateSamplingRate!(obj,tul...);
 updateSamplingRate!(obj::RTLSDRBinding,tul...) = RTLSDRBindings.updateSamplingRate!(obj,tul...);
+updateSamplingRate!(obj::PlutoSDR,tul...) = AdalmPluto.updateSamplingRate!(obj,tul...);
 export updateSamplingRate!;
 
-""" 
-Update gain of current radio device, and update radio object with the new obtained gain. 
-If the input is a [UHDRx] or a [UHDTx] object, it updates only the Rx or Tx gain   
-# --- Syntax 
+"""
+Update gain of current radio device, and update radio object with the new obtained gain.
+If the input is a [UHDRx] or a [UHDTx] object, it updates only the Rx or Tx gain
+# --- Syntax
 updateGain!(radio,gain)
-# --- Input parameters 
+# --- Input parameters
 - radio	  : SDR device
-- gain	: New desired gain 
-# --- Output parameters 
-- 
+- gain	: New desired gain
+# --- Output parameters
+-
 """
 updateGain!(obj::SDROverNetwork,tul...) = SDROverNetworks.updateGain!(obj,tul...);
 updateGain!(obj::UHDBinding,tul...) = UHDBindings.updateGain!(obj,tul...);
 updateGain!(obj::RadioSim,tul...) = RadioSims.updateGain!(obj,tul...);
 updateGain!(obj::RTLSDRBinding,tul...) = RTLSDRBindings.updateGain!(obj,tul...);
+updateGain!(obj::PlutoSDR,tul...) = AdalmPluto.updateGain!(obj,tul...);
 
 export updateGain!;
 getError(obj::UHDBinding) = UHDBindings.getError(obj);
@@ -162,13 +177,13 @@ getTimestamp(obj::SDROverNetwork) = SDROverNetworks.getMD(obj)[1:2];
 getTimestamp(obj::RTLSDRBinding) = RTLSDRBindings.getTimestamp(obj);
 
 
-# --- Container for Radio use 
-# We will have functions from different origin and different supported keywords 
+# --- Container for Radio use
+# We will have functions from different origin and different supported keywords
 # This function parse the input keywords and returns the ones supported by the function, listed in iteration
 function parseKeyword(kwargs,iteration)
-    # We populate a new dictionnary based on the input keywords and the supported ones 
+    # We populate a new dictionnary based on the input keywords and the supported ones
     # In order not to create keywords that are not supported (i.e leaving the default value)
-    # we only evaluate the keywords defined both in the 2 dictionnaries 
+    # we only evaluate the keywords defined both in the 2 dictionnaries
     # This means that the default fallback should never happen
     kwargs = Dict(key=>get(kwargs,key,0) for key in intersect(iteration,keys(kwargs)))
     return kwargs
@@ -195,7 +210,7 @@ It returns a radio object, depending on the type of SDR that can be used with al
 radio = openSDR(type,carrierFreq,samplingRate,gain,antenna;key)
 # --- Input parameters
 - type  : Desired SDR type. The different supported radio format can be obtained with getSupportedSDR();
-- carrierFreq : Carrier frequency [Hz] 
+- carrierFreq : Carrier frequency [Hz]
 - samplingRate : Sampling frequency (Hz)
 - gain : Analog Rx gain (dB)
 # --- Output parameters
@@ -213,13 +228,13 @@ function openSDR(name::Symbol,tul...;key...)
             # We look at args and find addr inside and extract the IP address. Then create a dict entry
             str = key[:args];
             ind = findfirst("addr",str)[1];
-            # If addr flag is here, convert it into IP 
+            # If addr flag is here, convert it into IP
             if ~isnothing(ind)
                 # --- Getting end of parameter
                 indV = findfirst(",",str[ind:end]);
                 # --- If last parameters, get the compelte string
                 (isnothing(indV)) ? indF = length(str) : indF = indV[1];;
-                # --- Extract ip address 
+                # --- Extract ip address
                 ip = str[ind+5:indF];
                 # --- Create a new input in dictionnary
                 keyOut[:addr] = ip;
@@ -232,7 +247,10 @@ function openSDR(name::Symbol,tul...;key...)
     elseif name == :rtlsdr
         suppKwargs = [:agc_mode;:tuner_gain_mode]
         radio = openRTLSDR(tul...;parseKeyword(key,suppKwargs)...);
-    else 
+    elseif name == :pluto
+        suppKwargs = [:addr; :backend; :bufferSize; :bandwidth];
+        radio = openPluto(tul...; parseKeyword(key, suppKwargs)...);
+    else
         @error "Unknown or unsupported SDR device. use getSupportedSDR() to list supported SDR backends";
     end
     return radio;
