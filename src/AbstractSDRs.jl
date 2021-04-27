@@ -18,12 +18,15 @@ import Base:close;
 export UHDBinding
 
 # ----------------------------------------------------
-# --- UHD Bindings
+# --- Adalm Pluto managment 
 # ----------------------------------------------------
 # ---
 @reexport using AdalmPluto
 export AdalmPluto;
 export updateGainMode!;
+# --- Conversion 
+# Adalm Pluto structure is based on Int parameters, and AbstractSDRs use massively Float. We need to convert just before dispatching. As some parameter may be float (as gain) we should round before conversion. The following function does that.
+_toInt(x) = Int(round(x));
 
 # ----------------------------------------------------
 # --- RTL-SDR bindings
@@ -126,7 +129,7 @@ updateCarrierFreq!(obj::SDROverNetwork,tul...) = SDROverNetworks.updateCarrierFr
 updateCarrierFreq!(obj::UHDBinding,tul...) = UHDBindings.updateCarrierFreq!(obj,tul...);
 updateCarrierFreq!(obj::RadioSim,tul...) = RadioSims.updateCarrierFreq!(obj,tul...);
 updateCarrierFreq!(obj::RTLSDRBinding,tul...) = RTLSDRBindings.updateCarrierFreq!(obj,tul...);
-updateCarrierFreq!(obj::PlutoSDR,tul...) = AdalmPluto.updateCarrierFreq!(obj,tul...);
+updateCarrierFreq!(obj::PlutoSDR,tul...) = AdalmPluto.updateCarrierFreq!(obj,_toInt.(tul)...);
 export updateCarrierFreq!;
 
 """
@@ -143,7 +146,7 @@ updateSamplingRate!(obj::SDROverNetwork,tul...) = SDROverNetworks.updateSampling
 updateSamplingRate!(obj::UHDBinding,tul...) = UHDBindings.updateSamplingRate!(obj,tul...);
 updateSamplingRate!(obj::RadioSim,tul...) = RadioSims.updateSamplingRate!(obj,tul...);
 updateSamplingRate!(obj::RTLSDRBinding,tul...) = RTLSDRBindings.updateSamplingRate!(obj,tul...);
-updateSamplingRate!(obj::PlutoSDR,tul...) = AdalmPluto.updateSamplingRate!(obj,tul...);
+updateSamplingRate!(obj::PlutoSDR,tul...) = AdalmPluto.updateSamplingRate!(obj,_toInt.(tul)...);
 export updateSamplingRate!;
 
 """
@@ -161,7 +164,7 @@ updateGain!(obj::SDROverNetwork,tul...) = SDROverNetworks.updateGain!(obj,tul...
 updateGain!(obj::UHDBinding,tul...) = UHDBindings.updateGain!(obj,tul...);
 updateGain!(obj::RadioSim,tul...) = RadioSims.updateGain!(obj,tul...);
 updateGain!(obj::RTLSDRBinding,tul...) = RTLSDRBindings.updateGain!(obj,tul...);
-updateGain!(obj::PlutoSDR,tul...) = AdalmPluto.updateGain!(obj,tul...);
+updateGain!(obj::PlutoSDR,tul...) = AdalmPluto.updateGain!(obj,_toInt.(tul)...);
 
 export updateGain!;
 getError(obj::UHDBinding) = UHDBindings.getError(obj);
@@ -248,8 +251,12 @@ function openSDR(name::Symbol,tul...;key...)
         suppKwargs = [:agc_mode;:tuner_gain_mode]
         radio = openRTLSDR(tul...;parseKeyword(key,suppKwargs)...);
     elseif name == :pluto
+        # --- List of supported keywords 
         suppKwargs = [:addr; :backend; :bufferSize; :bandwidth];
-        radio = openPluto(tul...; parseKeyword(key, suppKwargs)...);
+        # --- Managing Int argument 
+        # In Pluto the config uses Int parameter, and we specify Float as the top APi of AbstractSDRs. We should convert this 
+        # --- Opening radio device 
+        radio = openPluto(_toInt.(tul)...; parseKeyword(key, suppKwargs)...);
     else
         @error "Unknown or unsupported SDR device. use getSupportedSDR() to list supported SDR backends";
     end
