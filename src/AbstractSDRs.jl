@@ -170,15 +170,14 @@ updateGain!(obj::UHDBinding,tul...) = UHDBindings.updateGain!(obj,tul...);
 updateGain!(obj::RadioSim,tul...) = RadioSims.updateGain!(obj,tul...);
 updateGain!(obj::RTLSDRBinding,tul...) = RTLSDRBindings.updateGain!(obj,tul...);
 updateGain!(obj::PlutoSDR,tul...) = AdalmPluto.updateGain!(obj,_toInt.(tul)...);
-
 export updateGain!;
+
 getError(obj::UHDBinding) = UHDBindings.getError(obj);
 getError(obj::RadioSim) = RadioSims.getError(obj);
 getError(obj::SDROverNetwork) = SDROverNetworks.getMD(obj)[3];
 getError(obj::RTLSDRBinding) = RTLSDRBindings.getError(obj);
-
-
 export getError;
+
 getTimestamp(obj::UHDBinding) = UHDBindings.getTimestamp(obj);
 getTimestamp(obj::RadioSim) = RadioSims.getTimestamp(obj);
 getTimestamp(obj::SDROverNetwork) = SDROverNetworks.getMD(obj)[1:2];
@@ -188,21 +187,21 @@ getTimestamp(obj::RTLSDRBinding) = RTLSDRBindings.getTimestamp(obj);
 Get the current sampling rate of the radio device 
 The second parameter (optionnal) speicfies the Rx or Tx board (default : Rx)
 """ 
+getSamplingRate(obj::UHDBinding;mode=:rx) = ((mode == :rx) ? obj.rx.samplingRate : obj.tx.samplingRate)
+getSamplingRate(obj::RadioSim;mode=:rx) = ((mode == :rx) ? obj.rx.samplingRate : obj.tx.samplingRate)
+getSamplingRate(obj::SDROverNetwork;mode=:rx) = ((mode == :rx) ? obj.rx.samplingRate : obj.tx.samplingRate)
+getSamplingRate(obj::PlutoSDR;mode=:rx) = ((mode == :rx) ? obj.rx.effectiveSamplingRate : obj.tx.effectiveSamplingRate)
 export getSamplingRate
-getSamplingRate(obj::UHDBinding;mode=:rx) = (mode == :rx) ? obj.rx.samplingRate : obj.tx.samplingRate
-getSamplingRate(obj::RadioSim;mode=:rx) = (mode == :rx) ? obj.rx.samplingRate : obj.tx.samplingRate
-getSamplingRate(obj::SDROverNetwork;mode=:rx) = (mode == :rx) ? obj.rx.samplingRate : obj.tx.samplingRate
-getSamplingRate(obj::PlutoSDR;mode=:rx) = (mode == :rx) ? obj.rx.effectiveSamplingRate: obj.tx.effectiveSamplingRate
 
 """ 
 Get the current carrier frequency   of the radio device 
 The second parameter (optionnal) speicfies the Rx or Tx board (default : Rx)
 """ 
-export getCarrierFreq
 getCarrierFreq(obj::UHDBinding;mode=:rx) = (mode == :rx) ? obj.rx.samplingRate : obj.tx.samplingRate
 getCarrierFreq(obj::RadioSim;mode=:rx) = (mode == :rx) ? obj.rx.samplingRate : obj.tx.samplingRate
 getCarrierFreq(obj::SDROverNetwork;mode=:rx) = (mode == :rx) ? obj.rx.samplingRate : obj.tx.samplingRate
-getCarrierFreq(obj::PlutoSDR;mode=:rx) = (mode == :rx) ? obj.rx.effectiveCarrierFreq: obj.tx.effectiveCarrierFreq
+getCarrierFreq(obj::PlutoSDR;mode=:rx) = (mode == :rx) ? obj.rx.effectiveCarrierFreq : obj.tx.effectiveCarrierFreq
+export getCarrierFreq
 
 # --- Container for Radio use
 # We will have functions from different origin and different supported keywords
