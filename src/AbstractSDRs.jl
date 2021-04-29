@@ -146,7 +146,12 @@ updateSamplingRate!(obj::SDROverNetwork,tul...) = SDROverNetworks.updateSampling
 updateSamplingRate!(obj::UHDBinding,tul...) = UHDBindings.updateSamplingRate!(obj,tul...);
 updateSamplingRate!(obj::RadioSim,tul...) = RadioSims.updateSamplingRate!(obj,tul...);
 updateSamplingRate!(obj::RTLSDRBinding,tul...) = RTLSDRBindings.updateSamplingRate!(obj,tul...);
-updateSamplingRate!(obj::PlutoSDR,tul...) = AdalmPluto.updateSamplingRate!(obj,_toInt.(tul)...);
+function updateSamplingRate!(obj::PlutoSDR,tul...) 
+    # For Adalm Pluto we should also update the RF filter band 
+    AdalmPluto.updateSamplingRate!(obj,_toInt.(tul)...);
+    AdalmPluto.updateBandwidth!(obj,_toInt.(tul)...);
+    return obj.rx.effectiveSamplingRate 
+end
 export updateSamplingRate!;
 
 """
@@ -179,6 +184,25 @@ getTimestamp(obj::RadioSim) = RadioSims.getTimestamp(obj);
 getTimestamp(obj::SDROverNetwork) = SDROverNetworks.getMD(obj)[1:2];
 getTimestamp(obj::RTLSDRBinding) = RTLSDRBindings.getTimestamp(obj);
 
+""" 
+Get the current sampling rate of the radio device 
+The second parameter (optionnal) speicfies the Rx or Tx board (default : Rx)
+""" 
+export getSamplingRate
+getSamplingRate(obj::UHDBinding;mode=:rx) = (mode == :rx) ? obj.rx.samplingRate : obj.tx.samplingRate
+getSamplingRate(obj::RadioSim;mode=:rx) = (mode == :rx) ? obj.rx.samplingRate : obj.tx.samplingRate
+getSamplingRate(obj::SDROverNetwork;mode=:rx) = (mode == :rx) ? obj.rx.samplingRate : obj.tx.samplingRate
+getSamplingRate(obj::PlutoSDR;mode=:rx) = (mode == :rx) ? obj.rx.effectiveSamplingRate: obj.tx.effectiveSamplingRate
+
+""" 
+Get the current carrier frequency   of the radio device 
+The second parameter (optionnal) speicfies the Rx or Tx board (default : Rx)
+""" 
+export getCarrierFreq
+getCarrierFreq(obj::UHDBinding;mode=:rx) = (mode == :rx) ? obj.rx.samplingRate : obj.tx.samplingRate
+getCarrierFreq(obj::RadioSim;mode=:rx) = (mode == :rx) ? obj.rx.samplingRate : obj.tx.samplingRate
+getCarrierFreq(obj::SDROverNetwork;mode=:rx) = (mode == :rx) ? obj.rx.samplingRate : obj.tx.samplingRate
+getCarrierFreq(obj::PlutoSDR;mode=:rx) = (mode == :rx) ? obj.rx.effectiveCarrierFreq: obj.tx.effectiveCarrierFreq
 
 # --- Container for Radio use
 # We will have functions from different origin and different supported keywords
