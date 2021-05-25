@@ -1,6 +1,7 @@
 module Printing 
 using Printf
 
+# This module is intended to provide fancy macros to display warning
 
 export @inforx, @warnrx;
 export @infotx, @warntx;
