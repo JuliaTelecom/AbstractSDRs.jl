@@ -33,7 +33,7 @@ Get the current radio gain
 The second parameter (optionnal) specifies the Rx or Tx board (default : Rx)
 """
 getGain(obj::AbstractSDR;mode=:rx) = (mode == :rx) ? obj.rx.gain : obj.tx.gain 
-getGain(obj::PlutoSDR;mode=:rx) = (mode== :rx) ? obj.rx.iio.chn.hardwaregain : obj.rx.iio.chn.hardwaregain
+getGain(obj::PlutoSDR;mode=:rx) = AdalmPluto.getGain(obj)
 
 
 """ 
