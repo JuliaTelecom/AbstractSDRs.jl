@@ -126,7 +126,7 @@ send(obj::SDROverNetwork,sig,tul...;kwarg...) = SDROverNetworks.send(obj,sig,tul
 send(obj::UHDBinding,sig,tul...) = UHDBindings.send(obj,sig,tul...)
 send(obj::RadioSim,sig,tul...) = RadioSims.send(obj,sig,tul...)
 send(obj::RTLSDRBinding,sig,tul...) = RTLSDRBindings.send(obj,sig,tul...)
-send(obj::PlutoSDR,sig,tul...;kwarg...) = AdalmPluto.send(obj,sig,tul...;parseKeyword(kwarg,[:use_internal_buffer]))
+send(obj::PlutoSDR,sig,tul...;kwarg...) = AdalmPluto.send(obj,sig,tul...;parseKeyword(kwarg,[:use_internal_buffer])...)
 export send
 
 

@@ -2,9 +2,9 @@
 
 [[AdalmPluto]]
 deps = ["Pkg", "Printf", "Reexport", "Test"]
-git-tree-sha1 = "73225c702b231beaeab8a0f10df19a1bc9b77daf"
+git-tree-sha1 = "d3996574c75ac9ea44f94454d6c1893d6a861761"
 uuid = "af34ca7c-e544-47d5-a6fe-72495f08728e"
-version = "0.1.5"
+version = "0.2.2"
 
 [[ArgTools]]
 uuid = "0dad84c5-d112-42e6-8d28-ef12dabb789f"
