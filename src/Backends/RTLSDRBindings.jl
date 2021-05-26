@@ -1,7 +1,7 @@
 module RTLSDRBindings 
 
 # --- Print radio config
-include("Printing.jl");
+include("../Printing.jl");
 using .Printing
 
 using RTLSDR 
@@ -111,7 +111,7 @@ function updateSamplingRate!(radio,samplingRate)
     return samplingRate
 end
 function updateGain!(radio,gain)
-    @warn "Analog gain update is not supported for RTLSDR";
+    # @warn "Analog gain update is not supported for RTLSDR";
 end
 
 

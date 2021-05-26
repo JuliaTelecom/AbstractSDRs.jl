@@ -1,4 +1,12 @@
-#  using Pkg; Pkg.develop(PackageSpec(path="../UHD"));Pkg.activate(".");
+# ----------------------------------------------------
+# --- minimalTransceiver.jl
+# ---------------------------------------------------- 
+# This file is intented to give an example on how we can use tree based network architecture with SDR 
+# This file has to be run on a SDR based SoC that communicated with  a remote PC 
+# ---------
+# |
+# For instance, a USRP e310 with a julia session runs minimalTransceiver.jl 
+# On the PC side, the backend SDROverNetworks can be used to recover data from the E310
 @info "Julia-based minimal transceiver";
 
 using Distributed 

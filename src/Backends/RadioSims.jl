@@ -3,7 +3,7 @@ using Printf
 
 
 # --- Print radio config
-include("Printing.jl");
+include("../Printing.jl");
 using .Printing;
 
 # Methods extension 
@@ -169,7 +169,7 @@ end
 function updateSamplingRate!(radio::RadioSim,samplingRate);
     # --- We have to calculate the new sleeping value in μs
     sleepVal = Cint(floor( radio.rx.packetSize / samplingRate * radio.rx.radioSim.scaleSleep * 1e6));
-    (sleepVal == 0) && @warn "Sleep val is 0 => rate may be affected";
+    # (sleepVal == 0) && @warn "Sleep val is 0 => rate may be affected";
     radio.rx.radioSim.sleepVal = sleepVal;
     radio.tx.radioSim.sleepVal = sleepVal;
     # --- Update the sampling rate flag of the radio 
@@ -258,7 +258,7 @@ function recv!(sig::Vector{Complex{Cfloat}},radio::RadioSim)
     return packetSize;
 end
 
-function send(sig::Vector{Complex{Cfloat}},radio::RadioSim)
+function send(radio::RadioSim,sig::Vector{Complex{Cfloat}},flag::Bool)
     usleep(radio.tx);
 end
 
@@ -275,7 +275,8 @@ function updateBuffer!(radio,buffer)
 end
 
 function Base.close(radio::RadioSim)
-    radio = nothing;
+    radio.rx.released = true
+    radio.tx.released = true
 end
 
 function getError(radio::RadioSim)
