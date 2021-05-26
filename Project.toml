@@ -16,6 +16,7 @@ ZMQ = "c2297ded-f4af-51ae-bb23-16f91089e4e1"
 
 [compat]
 AdalmPluto = "0.2"
+Reexport = "0.2,1.0"
 RTLSDR = "0.0.1"
 UHDBindings = "0.2"
 ZMQ = "1.2"
