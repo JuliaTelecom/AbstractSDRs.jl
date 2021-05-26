@@ -54,7 +54,8 @@ function scan(backend::Union{Nothing,Vector{Symbol}}=nothing;key...)
             # --- Call scanner 
             e = AdalmPluto.scan(key[:backend]) 
             # --- Push in Vector of string 
-            push!(allStr,e)
+            # AdalmPluto answer "" and this corresponds to nothing interessting. We push in the vector only if what we had was not empty
+            (!isempty(e)) && (push!(allStr,e))
         elseif b == :radiosim
             # ----------------------------------------------------
             # --- Radiosims backend
