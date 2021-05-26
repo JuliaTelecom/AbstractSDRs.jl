@@ -13,8 +13,8 @@ This package proposes a single API to monitor different kind of Software Defined
 - All Universal Software Radio Peripheral [USRP](https://files.ettus.com/manual/), based on [UHDBindings](https://github.com/JuliaTelecom/UHDBindings.jl) package
 - RTL SDR dongle, with inclusion of [RTLSDR package](https://github.com/dressel/RTLSDR.jl)
 - Any device connected to a remote PC with a network connection (for instance, Exxx USRP device) on which a Julia session works and run AbstractSDRs package.
-- The ADALM Pluto SDR, through a specific package (WIP) 
-- A pure simulation package usefull for testing without radio or do re-doing offline dataflow processing based on a given buffer 
+- The ADALM Pluto SDR, through [AdalmPluto](https://github.com/JuliaTelecom/AdalmPluto.jl)
+- A pure simulation package (RadioSims.jl) useful for testing without radio or do re-doing offline dataflow processing populated by a given buffer 
 
 AbstractSDRs provides an unified API to open, transmit and received samples and close the SDRs. 
 
@@ -35,7 +35,7 @@ For instance, in order to get 4096 samples at 868MHz with a instantaneous bandwi
 		# ---------------------------------------------------- 
 		# --- Creating the radio ressource 
 		# The first parameter is to tune the Rx board
-		radio	= openSDR("UHDRx",carrierFreq,samplingRate,rxGain);
+		radio	= openSDR(:uhd,carrierFreq,samplingRate,rxGain);
 		# --- Display the current radio configuration
 		print(radio);
 		# --- Getting a buffer from the radio 
@@ -47,35 +47,7 @@ For instance, in order to get 4096 samples at 868MHz with a instantaneous bandwi
 	end
 
 Note that the SDR discrimination is done through the "UHDRx" parameter when opening the device, which states here that the UHD driver should be used, and that the radio will receive samples.
-To get the same functionnality with a RTL SDR dongle, the following code can be used.
-
-	function main()
-		# ---------------------------------------------------- 
-		# --- Physical layer and RF parameters 
-		# ---------------------------------------------------- 
-
-		carrierFreq		= 868e6;	# --- The carrier frequency 	
-		samplingRate		= 16e6;         # --- Targeted bandwdith 
-		rxGain			= 30.0;         # --- Rx gain 
-		nbSamples		= 4096;         # --- Desired number of samples
-	
-		# ---------------------------------------------------- 
-		# --- Getting all system with function calls  
-		# ---------------------------------------------------- 
-		# --- Creating the radio ressource 
-		# The first parameter is to tune the Rx board
-		radio	= openSDR("RTLRx",carrierFreq,samplingRate,rxGain);
-		# --- Display the current radio configuration
-		print(radio);
-		# --- Getting a buffer from the radio 
-		sig	= recv(radio,nbSamples);
-		# --- Release the radio ressources
-		close(radio); 
-		# --- Output to signal 
-		return sig;
-	end
-
-Note that the only difference lies in the radio opening.
+To get the same functionnality with a Adalm Pluto dongle, the same code can be used, changing only `radio	= openSDR(:uhd,carrierFreq,samplingRate,rxGain);` by `radio	= openSDR(:pluto,carrierFreq,samplingRate,rxGain); `
 
 ## Installation
 
@@ -90,6 +62,19 @@ Or, equivalently, via the `Pkg` API:
 
 ```julia
 julia> import Pkg; Pkg.add("AbstractSDRs")
+```
+
+## To cite this work 
+
+If you use `AbstractSDRs.jl` we encourage you to cite this work that you can find [on HAL](https://hal.archives-ouvertes.fr/hal-03122623): 
+```
+@InProceedings{Lavaud2021,
+  author    = {Lavaud, C and \textbf{Gerzaguet, R} and Gautier, M and Berder, O.},
+  title     = {{AbstractSDRs: Bring down the two-language barrier with Julia Language for efficient SDR prototyping}},
+  booktitle = {IEEE Embedded Systems Letters (ESL)},
+  year      = {2021},
+  doi       = {10.1109/LES.2021.3054174},
+}
 ```
 
 ## Backends 
