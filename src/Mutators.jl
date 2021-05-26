@@ -2,12 +2,25 @@
 # --- Mutators.jl
 # ---------------------------------------------------- 
 # Functions to update radio configuration and parameters 
-
+"""
+Update carrier frequency of current radio device, and update radio object with the new obtained sampling frequency.
+# --- Syntax
+updateCarrierFreq!(radio,carrierFreq)
+# --- Input parameters
+- radio	  : SDR device
+- carrierFreq	: New desired carrier frequency
+# --- Output parameters
+- carrierFreq : Effective carrier frequency
+"""
 updateCarrierFreq!(obj::SDROverNetwork,tul...) = SDROverNetworks.updateCarrierFreq!(obj,tul...);
 updateCarrierFreq!(obj::UHDBinding,tul...) = UHDBindings.updateCarrierFreq!(obj,tul...);
 updateCarrierFreq!(obj::RadioSim,tul...) = RadioSims.updateCarrierFreq!(obj,tul...);
 updateCarrierFreq!(obj::RTLSDRBinding,tul...) = RTLSDRBindings.updateCarrierFreq!(obj,tul...);
-updateCarrierFreq!(obj::PlutoSDR,tul...) = AdalmPluto.updateCarrierFreq!(obj,_toInt.(tul)...);
+function updateCarrierFreq!(obj::PlutoSDR,tul...)
+    # In pluto we only get a flag so we need to call to the accessor
+    AdalmPluto.updateCarrierFreq!(obj,_toInt.(tul)...);
+    return getCarrierFreq(obj)
+end
 
 """
 Update sampling rate of current radio device, and update radio object with the new obtained sampling frequency.
@@ -17,7 +30,7 @@ updateSamplingRate!(radio,samplingRate)
 - radio	  : SDR device
 - samplingRate	: New desired sampling rate
 # --- Output parameters
--
+- samplingRate : Effective sampling rate
 """
 updateSamplingRate!(obj::SDROverNetwork,tul...) = SDROverNetworks.updateSamplingRate!(obj,tul...);
 updateSamplingRate!(obj::UHDBinding,tul...) = UHDBindings.updateSamplingRate!(obj,tul...);
@@ -27,7 +40,7 @@ function updateSamplingRate!(obj::PlutoSDR,tul...)
     # For Adalm Pluto we should also update the RF filter band 
     AdalmPluto.updateSamplingRate!(obj,_toInt.(tul)...);
     AdalmPluto.updateBandwidth!(obj,_toInt.(tul)...);
-    return obj.rx.effectiveSamplingRate 
+    return getSamplingRate(obj)
 end
 
 """
@@ -39,13 +52,18 @@ updateGain!(radio,gain)
 - radio	  : SDR device
 - gain	: New desired gain
 # --- Output parameters
--
+- gain : New gain value
 """
 updateGain!(obj::SDROverNetwork,tul...) = SDROverNetworks.updateGain!(obj,tul...);
 updateGain!(obj::UHDBinding,tul...) = UHDBindings.updateGain!(obj,tul...);
 updateGain!(obj::RadioSim,tul...) = RadioSims.updateGain!(obj,tul...);
 updateGain!(obj::RTLSDRBinding,tul...) = RTLSDRBindings.updateGain!(obj,tul...);
-updateGain!(obj::PlutoSDR,tul...) = AdalmPluto.updateGain!(obj,_toInt.(tul)...);
+function updateGain!(obj::PlutoSDR,tul...) 
+    # In pluto we only get a flag so we have to access to gain value to return the updated gain value 
+    AdalmPluto.updateGain!(obj,_toInt.(tul)...);
+    return getGain(obj)
+end
+
 
 """ 
 Define Gain policy for the SDR radio. Only supported on AdalmPluto 
