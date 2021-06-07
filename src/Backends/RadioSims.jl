@@ -170,8 +170,8 @@ function updateSamplingRate!(radio::RadioSim,samplingRate);
     # --- We have to calculate the new sleeping value in μs
     sleepVal = Cint(floor( radio.rx.packetSize / samplingRate * radio.rx.radioSim.scaleSleep * 1e6));
     # (sleepVal == 0) && @warn "Sleep val is 0 => rate may be affected";
-    radio.rx.radioSim.sleepVal = sleepVal;
-    radio.tx.radioSim.sleepVal = sleepVal;
+    radio.rx.radioSim.sleepVal = 0#sleepVal;
+    radio.tx.radioSim.sleepVal = 0#sleepVal;
     # --- Update the sampling rate flag of the radio 
     radio.rx.samplingRate = samplingRate;
     radio.tx.samplingRate = samplingRate;
