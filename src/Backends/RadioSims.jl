@@ -258,8 +258,10 @@ function recv!(sig::Vector{Complex{Cfloat}},radio::RadioSim)
     return packetSize;
 end
 
-function send(radio::RadioSim,sig::Vector{Complex{Cfloat}},flag::Bool)
-    usleep(radio.tx);
+function send(radio::RadioSim,sig::Vector{Complex{Cfloat}},flag::Bool=false)
+    while(flag)
+        usleep(radio.tx);
+    end
 end
 
 function updatePacketSize!(radio,packetSize)
