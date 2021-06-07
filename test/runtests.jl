@@ -25,7 +25,7 @@ include("test_functions.jl")
 # Issue is that we need a connected device to perform all test so we will do as follows 
 # => Try to scan for device. If detected then proceed to the test, otherwise drop the test 
 # For UHD, we need to hardcode a potential IP address in case of non broadcast ehternet address. If we detect the UHD device with scan(:uhd) the we use the associated IP address. Otherwise we use UHD_ADDRESS. It means that in case of non broadcast ethernet link, you should modify the following line according to your UHD IP address
-global UHD_ADDRESS = "192.168.10.16"
+global UHD_ADDRESS = "127.0.0.1"
 
 # --- Define test backend 
 backends = [:radiosim;:uhd;:pluto]
@@ -35,7 +35,11 @@ for sdr ∈ backends
     println("# --- Testing $sdr backend ---")
     println("######################################")
     # --- Test scan 
-    str = scan(sdr;args="addr=$UHD_ADDRESS")
+    str = scan(sdr)
+    if isempty(str)
+        # If we have nothing, try with the USRP address
+        str = scan(sdr;args="addr=$UHD_ADDRESS")
+    end
     if isempty(str)
         # ----------------------------------------------------
         # --- We have find nothing, drop the rest of the tests 
@@ -46,6 +50,7 @@ for sdr ∈ backends
         # --- Testing stuff 
         # ---------------------------------------------------- 
         @testset "Opening" begin 
+            # check_scan(sdr)
             check_open(sdr)
         end 
 
