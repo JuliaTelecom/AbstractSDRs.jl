@@ -1,7 +1,7 @@
 name = "AbstractSDRs"
 uuid = "0bdde9fc-719a-4dc7-8589-49ca6634fa6b"
 authors = ["Robin Gerzaguet <robin.gerzaguet@irisa.fr>"]
-version = "0.2.0"
+version = "0.2.1"
 
 [deps]
 AdalmPluto = "af34ca7c-e544-47d5-a6fe-72495f08728e"
@@ -16,8 +16,8 @@ ZMQ = "c2297ded-f4af-51ae-bb23-16f91089e4e1"
 
 [compat]
 AdalmPluto = "0.2"
-Reexport = "0.2,1.0"
 RTLSDR = "0.0.1"
+Reexport = "0.2,1.0"
 UHDBindings = "0.2"
 ZMQ = "1.2"
 julia = "1.5,1.6"
