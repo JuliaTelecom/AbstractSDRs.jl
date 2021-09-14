@@ -208,7 +208,7 @@ function recv!(sig::Vector{Complex{Cfloat}},radio::RadioSim)
         # ---------------------------------------------------- 
         if packetSize ≤ radio.rx.packetSize 
             # --- Everything is fine => Emulate radio time 
-            usleep(radio.rx);
+            # usleep(radio.rx);
             # --- Return the previsouly stored buffer
             sig .= radio.rx.radioSim.buffer[1:packetSize];
         else 
@@ -217,7 +217,7 @@ function recv!(sig::Vector{Complex{Cfloat}},radio::RadioSim)
             nbSeg = 1 + packetSize ÷ radio.rx.packetSize;
             newBuff = repeat(radio.rx.radioSim.buffer,nbSeg);
             # --- Everything is fine => Emulate radio time 
-            usleep(radio.rx);
+            # usleep(radio.rx);
             # 
             sig .= newBuff[1:packetSize];
         end
@@ -229,7 +229,7 @@ function recv!(sig::Vector{Complex{Cfloat}},radio::RadioSim)
         mP = length(radio.rx.radioSim.circularBuffer);
         if packetSize ≤ mP
             # --- We take only a part of the circular buffer, and we updat the pointer
-            usleep(radio.rx);
+            # usleep(radio.rx);
             # Copy circular buffer part in working buffer 
             radio.rx.radioSim.pointerBuffer
             for n ∈ 1 : packetSize 
@@ -260,7 +260,7 @@ end
 
 function send(radio::RadioSim,sig::Vector{Complex{Cfloat}},flag::Bool=false)
     while(flag)
-        usleep(radio.tx);
+        # usleep(radio.tx);
     end
 end
 
