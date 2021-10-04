@@ -39,8 +39,11 @@ function scan(backend::Union{Nothing,Vector{Symbol}}=nothing;key...)
             (isempty(key)) && (key[:args] = "")
             # --- Call scanner 
             e  = UHDBindings.uhd_find_devices(key[:args])
-            # --- Push in Vector of string 
-            push!(allStr,e...)
+            # --- Return the direct IP address based on the str cal
+            for eN in e 
+                eM = eN[findfirst("_addr=",eN)[end] .+ (1:13)]
+                push!(allStr,eM)
+            end
         elseif b == :pluto 
             println("------------------------------")
             println("--- Scan for Pluto devices ---")
@@ -48,14 +51,22 @@ function scan(backend::Union{Nothing,Vector{Symbol}}=nothing;key...)
             # ----------------------------------------------------
             # --- Scan call 
             # ---------------------------------------------------- 
-            # --- Restrict keywords to uhd_find_devices 
+            # --- Restrict keywords to pluto 
             key = parseKeyword(key,[:backend])
-            (isempty(key)) && (key[:backend] = "usb")
-            # --- Call scanner 
-            e = AdalmPluto.scan(key[:backend]) 
-            # --- Push in Vector of string 
-            # AdalmPluto answer "" and this corresponds to nothing interessting. We push in the vector only if what we had was not empty
-            (!isempty(e)) && (push!(allStr,e))
+            if (isempty(key)) 
+                # By default we look for all available backends 
+                backend = ["usb","local","ip"]
+            else 
+                # Focus on given backend
+                backend = key[:backend]
+            end
+            for b in backend 
+                # --- Call scanner 
+                e = AdalmPluto.scan(b)
+                # --- Push in Vector of string 
+                # AdalmPluto answer "" and this corresponds to nothing interessting. We push in the vector only if what we had was not empty
+                (!isempty(e)) && (push!(allStr,e))
+            end
         elseif b == :radiosim
             # ----------------------------------------------------
             # --- Radiosims backend
