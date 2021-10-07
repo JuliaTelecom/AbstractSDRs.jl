@@ -58,7 +58,7 @@ function scan(backend::Union{Nothing,Vector{Symbol}}=nothing;key...)
                 backend = ["usb","local","ip","xml"]
             else 
                 # Focus on given backend
-                backend = key[:backend]
+                backend = [key[:backend]]
             end
             for b in backend 
                 # --- Call scanner 
