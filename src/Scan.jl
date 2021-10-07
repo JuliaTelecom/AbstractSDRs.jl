@@ -55,7 +55,7 @@ function scan(backend::Union{Nothing,Vector{Symbol}}=nothing;key...)
             key = parseKeyword(key,[:backend])
             if (isempty(key)) 
                 # By default we look for all available backends 
-                backend = ["usb","local","ip"]
+                backend = ["usb","local","ip","xml"]
             else 
                 # Focus on given backend
                 backend = key[:backend]

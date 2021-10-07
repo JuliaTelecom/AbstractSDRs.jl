@@ -127,9 +127,9 @@ uuid = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [[UHDBindings]]
 deps = ["Libdl", "Pkg", "Printf", "Test"]
-git-tree-sha1 = "3f27d40fb8337445194c03e11640131abe91ad0c"
+git-tree-sha1 = "f384797517363b79683116b3f4293ef1ab36f2de"
 uuid = "4d90b16f-829e-4b78-80d9-fb9bcf8c06e0"
-version = "0.2.0"
+version = "0.2.1"
 
 [[UUIDs]]
 deps = ["Random", "SHA"]
