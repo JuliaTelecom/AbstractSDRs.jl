@@ -28,7 +28,7 @@ function main(radio,samplingRate,mode=:rx)
 	print(radio);
 	# --- Init parameters 
 	# Get the radio size for buffer pre-allocation
-	nbSamples 		= 1*radio.rx.packetSize;
+    nbSamples 		= getBufferSize(radio)
 	# We will get complex samples from recv! method
 	# Fill with random value, as it will be overwritten (and not zero for tx benchmark)
 	sig		  = randn(Complex{Cfloat},nbSamples); 
@@ -62,32 +62,32 @@ function main(radio,samplingRate,mode=:rx)
 	# --- Last timeStamp and rate 
 	timeFinal = time();
 	# --- Getting effective rate 
-	radioRate	  = radio.rx.samplingRate;
+    radioRate	  = getSamplingRate(radio)
     effectiveRate = getRate(timeInit,timeFinal,nS);
 	# --- Free all and return
 	return (radioRate,effectiveRate);
 end
 
-function test(radioName,samplingRate)
+function test(radioName,samplingRate;args,duration=2)
 	# ---------------------------------------------------- 
 	# --- Physical layer and RF parameters 
 	# ---------------------------------------------------- 
 	# --- Create the radio object in function
 	carrierFreq		= 770e6;		
 	gain			= 50.0; 
-	radio = openSDR(radioName,carrierFreq,samplingRate,gain;args="addr=192.168.10.12"); 
+    radio = openSDR(radioName,carrierFreq,samplingRate,gain;args)
 	# --- Print the configuration
 	print(radio);
 	# --- Init parameters 
 	# Get the radio size for buffer pre-allocation
-	nbSamples 		= radio.packetSize;
+    nbSamples 		= getBufferSize(radio)
 	# We will get complex samples from recv! method
 	sig		  = zeros(Complex{Cfloat},nbSamples); 
 	# --- Targeting 2 seconds acquisition
 	# Init counter increment
 	nS		  = 0;
 	# Max counter definition
-	nbBuffer  = 2*samplingRate;
+	nbBuffer  = duration*samplingRate;
 	# --- Timestamp init 
 	pInit 			= recv!(sig,radio);
 	timeInit  	= time();
@@ -107,7 +107,7 @@ function test(radioName,samplingRate)
 	# --- Last timeStamp and rate 
 	timeFinal = time();
 	# --- Getting effective rate 
-	radioRate	  = radio.samplingRate;
+    radioRate	  = getSamplingRate(radio)
 	effectiveRate = getRate(timeInit,timeFinal,nS);
 	# --- Free all and return
 	close(radio);
@@ -125,18 +125,13 @@ end
 export Res
 
 
-function bench(mode=:rx)
+function benchmark_bench(;radioName=:radioSim,rateVect=[1e3;100e3;500e3;1e6:1e6:8e6;16e6],carrierFreq=770e6,gain=50.0,mode=:rx,args="addr=192.168.10.11")
 	# --- Set priority 
 	# --- Configuration
-	radioName 		= :radiosim;
-	carrierFreq		= 770e6;		
-	gain			= 50.0; 
-	# rateVect	= [1e3;100e3;500e3;1e6:1e6:8e6;16e6;32e6;64e6;80e6;100e6;200e6];
-	rateVect	= [1e3;100e3;500e3;1e6:1e6:8e6;16e6];
 	effectiveRate	= zeros(Float64,length(rateVect));
 	radioRate	= zeros(Float64,length(rateVect));
 	# --- Setting a very first configuration 
-	global radio = openSDR(radioName,carrierFreq,1e6,gain;ip="192.168.10.11"); 
+    global radio = openSDR(radioName,carrierFreq,1e6,gain;args)
 	for (iR,targetRate) in enumerate(rateVect)
 		(rR,eR) = main(radio,targetRate,mode);
 		radioRate[iR] = rR;
@@ -147,5 +142,6 @@ function bench(mode=:rx)
 	# @save "benchmark_UHD.jld2" res;
 	return strucRes;
 end
+
 
 end

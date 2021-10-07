@@ -1,25 +1,22 @@
-# --- USRP address 
-global USRP_ADDRESS = "192.168.10.16"
-#  This address may vary from time to time, not really sure how to handle dynamic testing 
-#
-#
 # ----------------------------------------------------
 # --- Define test routines 
 # ---------------------------------------------------- 
 """
 Scan with uhd_find_devices and return the USRP identifier 
 """
-function check_scan(b::Symbol;USRP_ADDRESS)
+function check_scan(b::Symbol;UHD_ADDRESS)
     # --- First we use no parameter (broadcast ethernet link) 
     str = scan(b)
     if length(str) == 0
-        println("No UHD device found. Be sure that a USRP is connected to your PC, and that the ethernet link is up. We try to use the direct IP address now (which is $USRP_ADDRESS). You can change its value depending on your ethernet setup")
+        println("No UHD device found. Be sure that a USRP is connected to your PC, and that the ethernet link is up. We try to use the direct IP address now (which is $UHD_ADDRESS). You can change its value depending on your ethernet setup")
     else 
         # We find a device so we update the USRP address based on what we have found 
-        global USRP_ADDRESS = str[1][findfirst("_addr=",str[1])[end] .+ (1:13)]
+        if b == :uhd
+            global UHD_ADDRESS = str[1][findfirst("_addr=",str[1])[end] .+ (1:13)]
+        end
     end 
     # The direct call with the IP address should give something         
-    str = scan(b;args="addr=$USRP_ADDRESS")
+    str = scan(b;args="addr=$UHD_ADDRESS")
     @test length(str) > 0 
     return str
 end
@@ -33,7 +30,7 @@ function check_open(sdrName)
 	samplingRate	= 8e6;         # --- Targeted bandwdith 
     gain			= 0;         # --- Rx gain  
     # --- Create the device 
-   global sdr = openSDR(sdrName,carrierFreq, samplingRate, gain;args="addr=$USRP_ADDRESS");
+   global sdr = openSDR(sdrName,carrierFreq, samplingRate, gain;args="addr=$UHD_ADDRESS");
    # Type is OK 
    if sdrName == :uhd 
        @test typeof(sdr) == UHDBinding
@@ -68,7 +65,7 @@ function check_carrierFreq(sdrName)
     samplingRate	= 8e6;         # --- Targeted bandwdith 
     gain			= 0;         # --- Rx gain  
     # --- Create the device 
-   global sdr = openSDR(sdrName,carrierFreq, samplingRate, gain;args="addr=$USRP_ADDRESS");
+   global sdr = openSDR(sdrName,carrierFreq, samplingRate, gain;args="addr=$UHD_ADDRESS");
    #  Classic value, should work 
    updateCarrierFreq!(sdr,800e6)
    @test getCarrierFreq(sdr) == 800e6
@@ -102,7 +99,7 @@ function check_samplingRate(sdrName)
     samplingRate	= 8e6;         # --- Targeted bandwdith 
     gain			= 0;         # --- Rx gain  
     # --- Create the device 
-   global sdr = openSDR(sdrName,carrierFreq, samplingRate, gain;args="addr=$USRP_ADDRESS");
+   global sdr = openSDR(sdrName,carrierFreq, samplingRate, gain;args="addr=$UHD_ADDRESS");
    #  Classic value, should work 
    updateSamplingRate!(sdr,8e6)
    @test getSamplingRate(sdr) == 8e6
@@ -134,7 +131,7 @@ function check_gain(sdrName)
     samplingRate	= 8e6;         # --- Targeted bandwdith 
     gain			= 0;         # --- Rx gain  
     # --- Create the device 
-   global sdr = openSDR(sdrName,carrierFreq, samplingRate, gain;args="addr=$USRP_ADDRESS");
+   global sdr = openSDR(sdrName,carrierFreq, samplingRate, gain;args="addr=$UHD_ADDRESS");
    #  Classic value, should work 
    nG  = updateGain!(sdr,20)
    @test getGain(sdr) == 20
@@ -157,7 +154,7 @@ function check_recv(sdrName)
     samplingRate	= 8e6;         # --- Targeted bandwdith 
     gain			= 0;         # --- Rx gain  
     # --- Create the device 
-   global sdr = openSDR(sdrName,carrierFreq, samplingRate, gain;args="addr=$USRP_ADDRESS");
+   global sdr = openSDR(sdrName,carrierFreq, samplingRate, gain;args="addr=$UHD_ADDRESS");
     sig = recv(sdr,1024)
     @test length(sig) == 1024 
     @test eltype(sig) == Complex{Float32}
@@ -173,7 +170,7 @@ function check_recv_preAlloc(sdrName)
     carrierFreq		= 440e6;	# --- The carrier frequency 	
     samplingRate	= 8e6;         # --- Targeted bandwdith 
     gain			= 0;         # --- Rx gain  
-   global sdr = openSDR(sdrName,carrierFreq, samplingRate, gain;args="addr=$USRP_ADDRESS",packetSize=4096);
+   global sdr = openSDR(sdrName,carrierFreq, samplingRate, gain;args="addr=$UHD_ADDRESS",packetSize=4096);
    sig = zeros(ComplexF32,2*1024)
    recv!(sig,sdr)
    @test length(sig) == 1024*2
@@ -192,7 +189,7 @@ function check_recv_iterative(sdrName)
     samplingRate	= 8e6;         # --- Targeted bandwdith 
     gain			= 0;         # --- Rx gain  
     # --- Create the device 
-   global sdr = openSDR(sdrName,carrierFreq, samplingRate, gain;args="addr=$USRP_ADDRESS",packetSize=4096);
+   global sdr = openSDR(sdrName,carrierFreq, samplingRate, gain;args="addr=$UHD_ADDRESS",packetSize=4096);
    sig = zeros(ComplexF32,2*1024)
    nbPackets  = 0
    maxPackets = 10_000 
@@ -216,7 +213,7 @@ function check_send(sdrName)
     gain			= 50.0; 
     nbSamples		= 4096*2
     # --- Create the device 
-   global sdr = openSDR(sdrName,carrierFreq, samplingRate, gain;args="addr=$USRP_ADDRESS",packetSize=4096);
+   global sdr = openSDR(sdrName,carrierFreq, samplingRate, gain;args="addr=$UHD_ADDRESS",packetSize=4096);
     # --- Create a sine wave
     f_c     = 3940;
     buffer  = 0.5.*[exp.(2im * π * f_c / samplingRate * n)  for n ∈ (0:nbSamples-1)];
