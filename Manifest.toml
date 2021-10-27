@@ -1,10 +1,10 @@
 # This file is machine-generated - editing it directly is not advised
 
 [[AdalmPluto]]
-deps = ["Pkg", "Printf", "Reexport", "Test"]
-git-tree-sha1 = "d3996574c75ac9ea44f94454d6c1893d6a861761"
+deps = ["Libdl", "Preferences", "Printf", "Reexport", "Test", "libiio_jll"]
+git-tree-sha1 = "970c8127faf8cde591ba16a3c1acefecfbb0cff8"
 uuid = "af34ca7c-e544-47d5-a6fe-72495f08728e"
-version = "0.2.2"
+version = "0.2.3"
 
 [[ArgTools]]
 uuid = "0dad84c5-d112-42e6-8d28-ef12dabb789f"
@@ -54,6 +54,12 @@ uuid = "29816b5a-b9ab-546f-933c-edad1886dfa8"
 
 [[Libdl]]
 uuid = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
+
+[[Libiconv_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
+git-tree-sha1 = "42b62845d70a619f063a7da093d995ec8e15e778"
+uuid = "94ce4f54-9a6c-5748-9c1c-f9c7231a4531"
+version = "1.16.1+1"
 
 [[Logging]]
 uuid = "56ddb016-857b-54e1-b83d-db4d58db5568"
@@ -126,10 +132,16 @@ deps = ["InteractiveUtils", "Logging", "Random", "Serialization"]
 uuid = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [[UHDBindings]]
-deps = ["Libdl", "Pkg", "Printf", "Test"]
-git-tree-sha1 = "f384797517363b79683116b3f4293ef1ab36f2de"
+deps = ["Libdl", "Preferences", "Printf", "USRPHardwareDriver_jll"]
+git-tree-sha1 = "1f02a343449720960083bf38828c293d1da92a89"
 uuid = "4d90b16f-829e-4b78-80d9-fb9bcf8c06e0"
-version = "0.2.1"
+version = "0.2.2"
+
+[[USRPHardwareDriver_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg", "boost_jll", "libusb_jll"]
+git-tree-sha1 = "ed266a8fad30d42a3f9095cd2029dbd94963ad87"
+uuid = "e339f254-40e1-517e-839f-dc67f1dbd84e"
+version = "4.1.0+0"
 
 [[UUIDs]]
 deps = ["Random", "SHA"]
@@ -137,6 +149,12 @@ uuid = "cf7118a7-6976-5b1a-9a39-7adc72f591a4"
 
 [[Unicode]]
 uuid = "4ec0a83e-493e-50e2-b9ac-8f72acf5a8f5"
+
+[[XML2_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl", "Libiconv_jll", "Pkg", "Zlib_jll"]
+git-tree-sha1 = "1acf5bdf07aa0907e0a37d3718bb88d4b687b74a"
+uuid = "02c8fc9c-b97f-50b9-bbe4-9be30ff0a78a"
+version = "2.9.12+0"
 
 [[ZMQ]]
 deps = ["FileWatching", "Sockets", "ZeroMQ_jll"]
@@ -154,11 +172,35 @@ version = "4.3.2+6"
 deps = ["Libdl"]
 uuid = "83775a58-1f1d-513f-b197-d71354ab007a"
 
+[[boost_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
+git-tree-sha1 = "ee3aa789316eb452bf6c52ca73b4fbc6806390b3"
+uuid = "28df3c45-c428-5900-9ff8-a3135698ca75"
+version = "1.76.0+0"
+
+[[libaio_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
+git-tree-sha1 = "720f6da6ad7cf21abd3e0fb7a4d6e022e26bb46c"
+uuid = "ddfeb750-efa4-54db-b6b8-70458c04a6eb"
+version = "0.3.112+0"
+
+[[libiio_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg", "XML2_jll", "libaio_jll", "libusb_jll"]
+git-tree-sha1 = "3b918bd0ab986f953be3db2e33c49e42a7482521"
+uuid = "8da1a5bb-246c-59c5-9ba1-a6804f8e92f0"
+version = "0.23.0+0"
+
 [[libsodium_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
 git-tree-sha1 = "848ab3d00fe39d6fbc2a8641048f8f272af1c51e"
 uuid = "a9144af2-ca23-56d9-984f-0d03f7b5ccf8"
 version = "1.0.20+0"
+
+[[libusb_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
+git-tree-sha1 = "6cd61968d9ec00371b4d1f68a446de2f53de0aa8"
+uuid = "a877fdc9-fe69-5ed6-b93d-11ecd0dc2d49"
+version = "1.0.24+0"
 
 [[nghttp2_jll]]
 deps = ["Artifacts", "Libdl"]
