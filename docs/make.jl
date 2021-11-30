@@ -15,7 +15,7 @@ makedocs(sitename="AbstractSDRs.jl",
 						],
 		 );
 
-makedocs(modules = [AbstractSDRs],sitename="My Documentation", format = Documenter.HTML(prettyurls = false))
+# makedocs(modules = [AbstractSDRs],sitename="AbstractSDRs Documentation", format = Documenter.HTML(prettyurls = false))
 
 deploydocs(
     repo = "github.com/JuliaTelecom/AbstractSDRs.jl",
