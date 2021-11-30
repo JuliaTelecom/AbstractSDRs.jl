@@ -145,7 +145,7 @@ radio = openSDR(type,carrierFreq,samplingRate,gain,antenna;key)
 """
 function openSDR(name::Symbol,tul...;key...)
     if name == :uhd
-        suppKwargs = [:args];
+        suppKwargs = [:args;:channels;:antennas;:cpu_format;:otw_format;:subdev;:nbAntennaRx;:nbAntennaTx;:bypassStreamer];
         radio = openUHD(tul...;parseKeyword(key,suppKwargs)...);
     elseif (name == :sdr_over_network || name == :e310)
         suppKwargs = [:addr];

@@ -15,6 +15,11 @@ uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
 [[Base64]]
 uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 
+[[CEnum]]
+git-tree-sha1 = "215a9aa4a1f23fbd05b92769fdd62559488d70e9"
+uuid = "fa961155-64e5-5f13-b03f-caf6b980ea82"
+version = "0.4.1"
+
 [[Dates]]
 deps = ["Printf"]
 uuid = "ade2ca70-3891-5945-98fb-dc099432e06a"
@@ -106,9 +111,9 @@ deps = ["Serialization"]
 uuid = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 
 [[Reexport]]
-git-tree-sha1 = "57d8440b0c7d98fc4f889e478e80f268d534c9d5"
+git-tree-sha1 = "45e428421666073eab6f2da5c9d310d99bb12f9b"
 uuid = "189a3867-3050-52da-a836-e630ba90ab69"
-version = "1.0.0"
+version = "1.2.2"
 
 [[SHA]]
 uuid = "ea8e919c-243c-51af-8825-aaa63cd721ce"
@@ -132,10 +137,10 @@ deps = ["InteractiveUtils", "Logging", "Random", "Serialization"]
 uuid = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [[UHDBindings]]
-deps = ["Libdl", "Preferences", "Printf", "USRPHardwareDriver_jll"]
-git-tree-sha1 = "1f02a343449720960083bf38828c293d1da92a89"
+deps = ["CEnum", "Libdl", "Preferences", "Printf", "USRPHardwareDriver_jll"]
+git-tree-sha1 = "f529f8308785cccbab4f33d83c608058850d4357"
 uuid = "4d90b16f-829e-4b78-80d9-fb9bcf8c06e0"
-version = "0.2.2"
+version = "0.3.0"
 
 [[USRPHardwareDriver_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg", "boost_jll", "libusb_jll"]
@@ -164,9 +169,9 @@ version = "1.2.1"
 
 [[ZeroMQ_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg", "libsodium_jll"]
-git-tree-sha1 = "74a74a3896b63980734cc876da8a103454559fe8"
+git-tree-sha1 = "fe5c65a526f066fb3000da137d5785d9649a8a47"
 uuid = "8f1865be-045e-5c20-9c9f-bfbfb0764568"
-version = "4.3.2+6"
+version = "4.3.4+0"
 
 [[Zlib_jll]]
 deps = ["Libdl"]
