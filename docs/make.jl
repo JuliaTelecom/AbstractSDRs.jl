@@ -10,6 +10,7 @@ makedocs(sitename="AbstractSDRs.jl",
 														 "Examples/example_setup.md"
 														 "Examples/example_parameters.md"
 														 "Examples/example_benchmark.md"
+														 "Examples/example_mimo.md"
 														 ],
 						],
 		 );
