@@ -21,7 +21,7 @@ export updateGainMode!;
 # ----------------------------------------------------
 # --- RTL-SDR bindings
 # ----------------------------------------------------
-include("Backends/RTLSDRBindings.jl");
+include("Backends/RTLSDR/RTLSDRBindings.jl");
 @reexport using .RTLSDRBindings
 export RTLSDRBinding
 

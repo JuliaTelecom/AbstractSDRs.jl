@@ -101,11 +101,6 @@ uuid = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 deps = ["InteractiveUtils", "Markdown", "Sockets", "Unicode"]
 uuid = "3fa0cd96-eef1-5676-8a61-b3b8758bbffb"
 
-[[RTLSDR]]
-git-tree-sha1 = "10eaba41c8aa147335ea3ecd6c182e9b2d8271ef"
-uuid = "71cfaeeb-f3e6-59e7-80b9-1b8c23d8f010"
-version = "0.0.1"
-
 [[Random]]
 deps = ["Serialization"]
 uuid = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
@@ -194,6 +189,12 @@ deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg", "XML2_jll", "libaio_jll", "l
 git-tree-sha1 = "3b918bd0ab986f953be3db2e33c49e42a7482521"
 uuid = "8da1a5bb-246c-59c5-9ba1-a6804f8e92f0"
 version = "0.23.0+0"
+
+[[librtlsdr_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg", "libusb_jll"]
+git-tree-sha1 = "bb4b1063acbabe8933ee9fea4d70c89e87789846"
+uuid = "d1c10d9e-0af6-511b-a44d-62fc8e59b084"
+version = "0.6.0+0"
 
 [[libsodium_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]

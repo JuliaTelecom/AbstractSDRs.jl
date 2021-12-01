@@ -77,6 +77,16 @@ function scan(backend::Union{Nothing,Vector{Symbol}}=nothing;key...)
             println("--- Scan for RadioSims    ---")
             println("------------------------------")
             push!(allStr,"RadioSim  backend is always there !")
+        elseif b == :rtlsdr 
+            # ----------------------------------------------------
+            # --- RTLSDR scanning mode 
+            # ----------------------------------------------------
+            println("------------------------------")
+            println("--- Scan for RTL-SDR       ---")
+            println("------------------------------")
+            RTLSDRBindings.scan()
+            # push!(allStr,"RadioSim  backend is always there !")
+
         end 
     end 
     return allStr

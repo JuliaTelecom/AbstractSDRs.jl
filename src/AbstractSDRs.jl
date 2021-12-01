@@ -5,7 +5,6 @@ using Libdl
 using Printf
 using Sockets
 using Reexport
-using RTLSDR
 
 import Base:close;
 

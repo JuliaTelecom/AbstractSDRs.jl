@@ -20,3 +20,5 @@ end
 # --- Conversion 
 # Adalm Pluto structure is based on Int parameters, and AbstractSDRs use massively Float. We need to convert just before dispatching. As some parameter may be float (as gain) we should round before conversion. The following function does that.
 _toInt(x) = Int(round(x));
+
+
