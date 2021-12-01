@@ -31,7 +31,8 @@ global UHD_ADDRESS = "192.168.10.16"
 
 
 # --- Define test backend 
-backends = [:radiosim;:uhd;:pluto]
+# backends = [:radiosim;:uhd;:pluto;:rtlsdr]
+backends = [:radiosim;:rtlsdr]
 # backends = [:radiosim;:pluto]
 for sdr ∈ backends 
     # --- Flaging test

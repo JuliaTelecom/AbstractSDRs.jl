@@ -78,7 +78,7 @@ end
 
 # --- Complete structure 
 mutable struct RTLSDRBinding
-    radio::Ptr{Ptr{rtlsdr_dev_t}}
+    radio::Ref{Ptr{rtlsdr_dev_t}}
     rx::RTLSDRRx
     tx::RTLSDRTx
 end
@@ -127,7 +127,7 @@ function openRTLSDR(carrierFreq,samplingRate,gain;agc_mode=0,tuner_gain_mode=0)
                   0
                  );    
     radio = RTLSDRBinding(
-                          rtlsdr,
+                          ptr_rtlsdr,
                           rx,
                           tx
     )
@@ -136,9 +136,9 @@ end
 
 function updateCarrierFreq!(radio::RTLSDRBinding,carrierFreq)
     # --- Set the carrier frequency 
-    rtlsdr_set_center_freq(radio.radio,carrierFreq)
+    rtlsdr_set_center_freq(radio.radio[],carrierFreq)
     # --- Get the carrier frequency 
-    carrierFreq = rtlsdr_get_center_freq(radio.radio)
+    carrierFreq = rtlsdr_get_center_freq(radio.radio[])
     # --- Update structure
     radio.rx.carrierFreq = carrierFreq;
     radio.tx.carrierFreq = carrierFreq;
@@ -146,9 +146,9 @@ function updateCarrierFreq!(radio::RTLSDRBinding,carrierFreq)
 end
 function updateSamplingRate!(radio,samplingRate)
     # --- Set the sampling rate 
-    rtlsdr_set_sample_rate(radio.radio,samplingRate)
+    rtlsdr_set_sample_rate(radio.radio[],samplingRate)
     # --- Get the sampling rate 
-    samplingRate = rtlsdr_get_sample_rate(radio.radio)
+    samplingRate = rtlsdr_get_sample_rate(radio.radio[])
     # --- Update Fields
     radio.rx.samplingRate = samplingRate;
     radio.tx.samplingRate = samplingRate;
@@ -184,7 +184,7 @@ function recv!(sig::Vector{ComplexF32},radio::RTLSDRBinding)
     pointerSamples   = Ref{Cint}(0)
     # --- Call the receive method 
     ptr = pointer(radio.rx.rtlsdr.buffer,1)
-    rtlsdr_read_sync(radio.radio,ptr,nbSamples*2,pointerSamples)
+    rtlsdr_read_sync(radio.radio[],ptr,nbSamples*2,pointerSamples)
     # --- Get the number of received complex symbols
     nbElem = pointerSamples[] ÷ 2
     # --- From Bytes to complex 
@@ -226,7 +226,7 @@ function _btoc(in::UInt8)
 end
 
 function close(radio::RTLSDRBinding)
-    rtlsdr_close(radio.radio)
+    rtlsdr_close(radio.radio[])
     radio.rx.released = 1;
     radio.tx.released = 1;
     @info "RTL-SDR device is now close"
@@ -245,16 +245,17 @@ function scan()
     if nE > 0 
         # Found a RTL SDR dongle 
         println("Found $nE RTL-SDR dongle")
-        manufact = initEmptyString(200)
-        product = initEmptyString(200)
-        serial = initEmptyString(200)
-        radio = openRTLSDR(800e6,1e6,20)
-        rtlsdr_get_usb_strings(radio.radio,manufact,product,serial)
-        (!isempty(manufact)) && (println("Manufact = $(truncate(manufact))"))
-        (!isempty(product)) && (println("Product  = $(truncate(product))"))
-        (!isempty(serial)) && (println("Serial   = $(truncate(serial))"))
-        close(radio)
+        # manufact = initEmptyString(200)
+        # product = initEmptyString(200)
+        # serial = initEmptyString(200)
+        # radio = openRTLSDR(800e6,1e6,20)
+        # rtlsdr_get_usb_strings(radio.radio[],manufact,product,serial)
+        # (!isempty(manufact)) && (println("Manufact = $(truncate(manufact))"))
+        # (!isempty(product)) && (println("Product  = $(truncate(product))"))
+        # (!isempty(serial)) && (println("Serial   = $(truncate(serial))"))
+        # close(radio)
     end
+    return nE
 end
 
 

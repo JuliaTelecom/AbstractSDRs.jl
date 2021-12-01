@@ -27,7 +27,7 @@ Test that the device can be open, configured and closed
 function check_open(sdrName)
     # --- Main parameters 
 	carrierFreq		= 440e6;	# --- The carrier frequency 	
-	samplingRate	= 8e6;         # --- Targeted bandwdith 
+	samplingRate	= 1e6;         # --- Targeted bandwdith 
     gain			= 0;         # --- Rx gain  
     # --- Create the device 
    global sdr = openSDR(sdrName,carrierFreq, samplingRate, gain;args="addr=$UHD_ADDRESS");
@@ -38,6 +38,8 @@ function check_open(sdrName)
        @test typeof(sdr) == PlutoSDR
    elseif sdrName == :radiosim 
        @test typeof(sdr) == RadioSim 
+   elseif sdrName == :rtlsdr
+       @test typeof(sdr) == RTLSDRBinding
    else 
        @error "Untested radio backend" 
    end
@@ -47,7 +49,7 @@ function check_open(sdrName)
    @test getCarrierFreq(sdr) == carrierFreq
    @test getCarrierFreq(sdr,mode=:rx) == carrierFreq
    @test getCarrierFreq(sdr,mode=:tx) == carrierFreq
-   # Configuration : Badnwidth 
+   # Configuration : Bandwidth 
    @test getSamplingRate(sdr) == samplingRate
    @test getSamplingRate(sdr,mode=:rx) == samplingRate
    @test getSamplingRate(sdr,mode=:tx) == samplingRate
@@ -111,7 +113,7 @@ function check_samplingRate(sdrName)
    @test getSamplingRate(sdr,mode=:rx) == 15.36e6
    @test getSamplingRate(sdr,mode=:tx) == 15.36e6
    # If we specify a out of range frequency, it should bound to max val
-   eS = updateSamplingRate!(sdr,100e9)
+   eS = updateSamplingRate!(sdr,1e9)
    # @test getSamplingRate(sdr) != 100e9
    # @test getSamplingRate(sdr,mode=:rx) != 100e9 
    # @test getSamplingRate(sdr,mode=:tx) != 100e9 
@@ -126,22 +128,26 @@ end
 Check the gain update for the USRP device
 """
 function check_gain(sdrName)
-    # --- Main parameters 
-    carrierFreq		= 440e6;	# --- The carrier frequency 	
-    samplingRate	= 8e6;         # --- Targeted bandwdith 
-    gain			= 0;         # --- Rx gain  
-    # --- Create the device 
-   global sdr = openSDR(sdrName,carrierFreq, samplingRate, gain;args="addr=$UHD_ADDRESS");
-   #  Classic value, should work 
-   nG  = updateGain!(sdr,20)
-   @test getGain(sdr) == 20
-   @test getGain(sdr;mode=:rx) == 20
-   @test getGain(sdr;mode=:tx) == 20
-   @test getGain(sdr) == nG
-   @test getGain(sdr;mode=:rx) == nG
-   @test getGain(sdr;mode=:tx) == nG
-   close(sdr);
-   @test isClosed(sdr) == true
+    if sdrName == :rtlsdr 
+        # No gain support for RTLSDR
+    else 
+        # --- Main parameters 
+        carrierFreq		= 440e6;	# --- The carrier frequency 	
+        samplingRate	= 8e6;         # --- Targeted bandwdith 
+        gain			= 0;         # --- Rx gain  
+        # --- Create the device 
+        global sdr = openSDR(sdrName,carrierFreq, samplingRate, gain;args="addr=$UHD_ADDRESS");
+        #  Classic value, should work 
+        nG  = updateGain!(sdr,20)
+        @test getGain(sdr) == 20
+        @test getGain(sdr;mode=:rx) == 20
+        @test getGain(sdr;mode=:tx) == 20
+        @test getGain(sdr) == nG
+        @test getGain(sdr;mode=:rx) == nG
+        @test getGain(sdr;mode=:tx) == nG
+        close(sdr);
+        @test isClosed(sdr) == true
+    end
 end 
 
 
@@ -208,32 +214,36 @@ end
 Test that the device sucessfully transmit data 
 """ 
 function check_send(sdrName)
-    carrierFreq		= 770e6;		
-    samplingRate	= 4e6; 
-    gain			= 50.0; 
-    nbSamples		= 4096*2
-    # --- Create the device 
-   global sdr = openSDR(sdrName,carrierFreq, samplingRate, gain;args="addr=$UHD_ADDRESS",packetSize=4096);
-    # --- Create a sine wave
-    f_c     = 3940;
-    buffer  = 0.5.*[exp.(2im * π * f_c / samplingRate * n)  for n ∈ (0:nbSamples-1)];
-    buffer  = convert.(Complex{Cfloat},buffer);
+    if sdrName == :rtlsdr 
+        # No need to do anything
+    else
+        carrierFreq		= 770e6;		
+        samplingRate	= 4e6; 
+        gain			= 50.0; 
+        nbSamples		= 4096*2
+        # --- Create the device 
+        global sdr = openSDR(sdrName,carrierFreq, samplingRate, gain;args="addr=$UHD_ADDRESS",packetSize=4096);
+        # --- Create a sine wave
+        f_c     = 3940;
+        buffer  = 0.5.*[exp.(2im * π * f_c / samplingRate * n)  for n ∈ (0:nbSamples-1)];
+        buffer  = convert.(Complex{Cfloat},buffer);
 
-    buffer2  = 0.5.*[exp.(2im * π *  10 * f_c / samplingRate * n)  for n ∈ (0:nbSamples-1)];
-    buffer2  = convert.(Complex{Cfloat},buffer2);
-    buffer = [buffer;buffer2];
+        buffer2  = 0.5.*[exp.(2im * π *  10 * f_c / samplingRate * n)  for n ∈ (0:nbSamples-1)];
+        buffer2  = convert.(Complex{Cfloat},buffer2);
+        buffer = [buffer;buffer2];
 
-    cntAll  = 0;
-    maxPackets = 10_000 
-    nbPackets  = 0
-    for _ ∈ 1 : maxPackets
-        send(sdr,buffer,false);
-       # --- Increment packet index 
-       nbPackets += 1
+        cntAll  = 0;
+        maxPackets = 10_000 
+        nbPackets  = 0
+        for _ ∈ 1 : maxPackets
+            send(sdr,buffer,false);
+            # --- Increment packet index 
+            nbPackets += 1
+        end
+        @test nbPackets == maxPackets
+        close(sdr)
+        @test isClosed(sdr) == true
     end
-    @test nbPackets == maxPackets
-    close(sdr)
-   @test isClosed(sdr) == true
 end
 
 # # ----------------------------------------------------

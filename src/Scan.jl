@@ -85,8 +85,7 @@ function scan(backend::Union{Nothing,Vector{Symbol}}=nothing;key...)
             println("--- Scan for RTL-SDR       ---")
             println("------------------------------")
             RTLSDRBindings.scan()
-            # push!(allStr,"RadioSim  backend is always there !")
-
+            push!(allStr,"RTL-SDR USB dongle")
         end 
     end 
     return allStr
