@@ -17,6 +17,7 @@ librtlsdr_jll = "d1c10d9e-0af6-511b-a44d-62fc8e59b084"
 
 [compat]
 AdalmPluto = "0.2.3"
+CEnum = "0.4"
 Reexport = "0.2,1.0"
 UHDBindings = "0.3"
 ZMQ = "1.2"
