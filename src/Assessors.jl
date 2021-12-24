@@ -61,4 +61,26 @@ bufferSize : Size of radio internal buffer
 getBufferSize(obj::AbstractSDR) = obj.rx.packetSize          # We get the fields 
 getBufferSize(obj::PlutoSDR)    = obj.rx.buf.C_sample_size   # For Pluto this is hidden in the buffer config
 
+""" 
+Returns the range of the carrier frequencies supported by the current radio devices. The output is a list with the support carrier frequencies. By default it uses the first channel of the radio. For the SDRs that support, another channel can be used with te keyword `chan` 
+    list_carrierFreq = getCarrierFreqRange(radio;chan=0)
+"""
+function getRxCarrierFreqRange(radio::UHDBinding;chan=0)
+    # For some SDRs, we may have a function that direcly provides the range. However, it must be use with the appropriate container
+    # Handle of radio 
+    h = radio.rx.pointerUSRP
+    # Handle of carrier frequency range 
+    range_handle = Ref{UHDBindings.LibUHD.uhd_meta_range_handle}()
+    UHDBindings.LibUHD.uhd_meta_range_make(range_handle)
+    freq_range_out = range_handle[] # Init a pointer, use the dereferenced pointer
+    # Call to the lib 
+    UHDBindings.LibUHD.uhd_usrp_get_rx_freq_range(h, chan, freq_range_out)
+    # Convert the handle as a list 
+    # First we have a conversion into strings 
+    stringSize      = 1024
+    stringContainer = String(ones(UInt8,stringSize)*UInt8(32))
+    UHDBindings.LibUHD.uhd_meta_range_to_pp_string(freq_range_out,stringContainer,stringSize)
+    # Then we can cast the results as float list ? 
+    # TODO based on the look of the list 
+end
 
