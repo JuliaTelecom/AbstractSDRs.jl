@@ -22,7 +22,7 @@ function scan(backend::Union{Nothing,Vector{Symbol}}=nothing;key...)
     # Note that we can not search for SDROverNetwork, RadioSims and RTLSDR
     # TODO => Scan methods for RTLSDR ?
     if isnothing(backend)
-        backend = [:uhd;:pluto]
+        backend = [:uhd;:pluto;:rtlsdr]
     end 
     allStr = String[];
     for b in backend 
