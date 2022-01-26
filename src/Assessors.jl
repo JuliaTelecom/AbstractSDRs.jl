@@ -62,13 +62,13 @@ getBufferSize(obj::AbstractSDR) = obj.rx.packetSize          # We get the fields
 getBufferSize(obj::PlutoSDR)    = obj.rx.buf.C_sample_size   # For Pluto this is hidden in the buffer config
 
 """ 
-Returns the range of the carrier frequencies supported by the current radio devices. The output is a list with the support carrier frequencies. By default it uses the first channel of the radio. For the SDRs that support, another channel can be used with te keyword `chan` 
+Returns the range of the carrier frequencies supported by the current radio devices. The output is a list or a range with the support carrier frequencies. By default it uses the first channel of the radio. For the SDRs that support, another channel can be used with te keyword `chan` 
     list_carrierFreq = getCarrierFreqRange(radio;chan=0)
 """
 function getRxCarrierFreqRange(radio::UHDBinding;chan=0)
     # For some SDRs, we may have a function that direcly provides the range. However, it must be use with the appropriate container
     # Handle of radio 
-    h = radio.rx.pointerUSRP
+    h = radio.rx.uhd.pointerUSRP
     # Handle of carrier frequency range 
     range_handle = Ref{UHDBindings.LibUHD.uhd_meta_range_handle}()
     UHDBindings.LibUHD.uhd_meta_range_make(range_handle)
@@ -76,11 +76,42 @@ function getRxCarrierFreqRange(radio::UHDBinding;chan=0)
     # Call to the lib 
     UHDBindings.LibUHD.uhd_usrp_get_rx_freq_range(h, chan, freq_range_out)
     # Convert the handle as a list 
-    # First we have a conversion into strings 
+    # First we have a ion into strings 
     stringSize      = 1024
     stringContainer = String(ones(UInt8,stringSize)*UInt8(32))
     UHDBindings.LibUHD.uhd_meta_range_to_pp_string(freq_range_out,stringContainer,stringSize)
-    # Then we can cast the results as float list ? 
-    # TODO based on the look of the list 
+    # We have a range with start, stop, step 
+    news = split(split(stringContainer,"\n")[1],",")
+    startFreq = parse(Float64,news[1][2:end])  # Start with (
+    stopFreq  = parse(Float64,news[2])
+    stepFreq = parse(Float64,news[3][1:end-1]) # Stop with )
+    # Create a range 
+    freqRange = range(startFreq,step=stepFreq,stop=stopFreq)
+    return freqRange
 end
-
+function getTxCarrierFreqRange(radio::UHDBinding;chan=0)
+    # For some SDRs, we may have a function that direcly provides the range. However, it must be use with the appropriate container
+    # Handle of radio 
+    h = radio.tx.uhd.pointerUSRP
+    # Handle of carrier frequency range 
+    range_handle = Ref{UHDBindings.LibUHD.uhd_meta_range_handle}()
+    UHDBindings.LibUHD.uhd_meta_range_make(range_handle)
+    freq_range_out = range_handle[] # Init a pointer, use the dereferenced pointer
+    # Call to the lib 
+    UHDBindings.LibUHD.uhd_usrp_get_tx_freq_range(h, chan, freq_range_out)
+    # Convert the handle as a list 
+    # First we have a ion into strings 
+    stringSize      = 1024
+    stringContainer = String(ones(UInt8,stringSize)*UInt8(32))
+    UHDBindings.LibUHD.uhd_meta_range_to_pp_string(freq_range_out,stringContainer,stringSize)
+    # We have a range with start, stop, step 
+    news = split(split(stringContainer,"\n")[1],",")
+    startFreq = parse(Float64,news[1][2:end])  # Start with (
+    stopFreq  = parse(Float64,news[2])
+    stepFreq = parse(Float64,news[3][1:end-1]) # Stop with )
+    # Create a range 
+    freqRange = range(startFreq,step=stepFreq,stop=stopFreq)
+    return freqRange
+end
+getRxCarrierFreqRange(radio::RadioSim;chan=0) = range(0,step=1,stop=16e9)
+getTxCarrierFreqRange(radio::RadioSim;chan=0) = range(0,step=1,stop=16e9)
