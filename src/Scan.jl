@@ -41,7 +41,8 @@ function scan(backend::Union{Nothing,Vector{Symbol}}=nothing;key...)
             e  = UHDBindings.uhd_find_devices(key[:args])
             # --- Return the direct IP address based on the str cal
             for eN in e 
-                eM = eN[findfirst("_addr=",eN)[end] .+ (1:13)]
+                eM = eN[findfirst("addr=",eN)[end]+1:end]
+                eM = split(eM,"\n")[1]
                 push!(allStr,eM)
             end
         elseif b == :pluto 
