@@ -85,8 +85,10 @@ function scan(backend::Union{Nothing,Vector{Symbol}}=nothing;key...)
             println("------------------------------")
             println("--- Scan for RTL-SDR       ---")
             println("------------------------------")
-            RTLSDRBindings.scan()
-            push!(allStr,"RTL-SDR USB dongle")
+            nE = RTLSDRBindings.scan()
+            if nE > 0 
+                push!(allStr,"RTL-SDR USB dongle")
+            end
         end 
     end 
     return allStr
