@@ -1,7 +1,7 @@
 name = "AbstractSDRs"
 uuid = "0bdde9fc-719a-4dc7-8589-49ca6634fa6b"
 authors = ["Robin Gerzaguet <robin.gerzaguet@irisa.fr>"]
-version = "0.3.1"
+version = "0.3.2"
 
 [deps]
 AdalmPluto = "af34ca7c-e544-47d5-a6fe-72495f08728e"
