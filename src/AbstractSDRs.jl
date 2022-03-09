@@ -181,6 +181,7 @@ function openSDR(name::Symbol,tul...;key...)
         # --- Opening radio device 
         radio = openPluto(_toInt.(tul)...; parseKeyword(key, suppKwargs)...);
     else
+        radio = nothing
         @error "Unknown or unsupported SDR device. use getSupportedSDR() to list supported SDR backends";
     end
     return radio;
