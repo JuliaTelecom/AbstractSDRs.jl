@@ -16,9 +16,9 @@ ZMQ = "c2297ded-f4af-51ae-bb23-16f91089e4e1"
 librtlsdr_jll = "d1c10d9e-0af6-511b-a44d-62fc8e59b084"
 
 [compat]
-AdalmPluto = "0.2.3"
+AdalmPluto = "0.3"
 Reexport = "0.2,1.0"
-UHDBindings = "0.3"
+UHDBindings = "0.4"
 ZMQ = "1.2"
 julia = "1.6"
 CEnum="0.4"
