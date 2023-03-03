@@ -5,6 +5,7 @@ version = "0.4.1"
 
 [deps]
 AdalmPluto = "af34ca7c-e544-47d5-a6fe-72495f08728e"
+BladeRFHardwareDriver_jll = "ddcda2f0-0770-5eff-b02e-03a583a735ee"
 CEnum = "fa961155-64e5-5f13-b03f-caf6b980ea82"
 Libdl = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
@@ -17,9 +18,9 @@ librtlsdr_jll = "d1c10d9e-0af6-511b-a44d-62fc8e59b084"
 
 [compat]
 AdalmPluto = "0.3"
+CEnum = "0.4"
 Reexport = "0.2,1.0"
 UHDBindings = "0.4"
 ZMQ = "1.2"
 julia = "1.6"
-CEnum="0.4"
-librtlsdr_jll="0.6"
+librtlsdr_jll = "0.6"

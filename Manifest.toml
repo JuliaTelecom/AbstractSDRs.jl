@@ -1,14 +1,14 @@
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.9.0-DEV"
+julia_version = "1.8.5"
 manifest_format = "2.0"
-project_hash = "a9c012397723e4f2588d47ff4b0c1355a9e65f72"
+project_hash = "cce4065dea279c2a749ed1c42c62ab3e03742bd3"
 
 [[deps.AdalmPluto]]
 deps = ["Libdl", "Preferences", "Printf", "Reexport", "Test", "libiio_jll"]
-git-tree-sha1 = "970c8127faf8cde591ba16a3c1acefecfbb0cff8"
+git-tree-sha1 = "6507ea583072a94f12f287cb6dafd10416697830"
 uuid = "af34ca7c-e544-47d5-a6fe-72495f08728e"
-version = "0.2.3"
+version = "0.3.2"
 
 [[deps.ArgTools]]
 uuid = "0dad84c5-d112-42e6-8d28-ef12dabb789f"
@@ -20,10 +20,21 @@ uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
 [[deps.Base64]]
 uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 
+[[deps.BladeRFHardwareDriver_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg", "libusb_jll"]
+git-tree-sha1 = "39874571d55c1d0e3d5b8194d959bc8472de887f"
+uuid = "ddcda2f0-0770-5eff-b02e-03a583a735ee"
+version = "2.4.1+0"
+
 [[deps.CEnum]]
-git-tree-sha1 = "215a9aa4a1f23fbd05b92769fdd62559488d70e9"
+git-tree-sha1 = "eb4cb44a499229b3b8426dcfb5dd85333951ff90"
 uuid = "fa961155-64e5-5f13-b03f-caf6b980ea82"
-version = "0.4.1"
+version = "0.4.2"
+
+[[deps.CompilerSupportLibraries_jll]]
+deps = ["Artifacts", "Libdl"]
+uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"
+version = "1.0.1+0"
 
 [[deps.Dates]]
 deps = ["Printf"]
@@ -43,9 +54,9 @@ uuid = "b77e0a4c-d291-57a0-90e8-8db25a27a240"
 
 [[deps.JLLWrappers]]
 deps = ["Preferences"]
-git-tree-sha1 = "642a199af8b68253517b80bd3bfd17eb4e84df6e"
+git-tree-sha1 = "abc9885a7ca2052a736a600f7fa66209f96506e1"
 uuid = "692b3bcd-3c85-4b1f-b108-f13ce0eb3210"
-version = "1.3.0"
+version = "1.4.1"
 
 [[deps.LibCURL]]
 deps = ["LibCURL_jll", "MozillaCACerts_jll"]
@@ -55,7 +66,7 @@ version = "0.6.3"
 [[deps.LibCURL_jll]]
 deps = ["Artifacts", "LibSSH2_jll", "Libdl", "MbedTLS_jll", "Zlib_jll", "nghttp2_jll"]
 uuid = "deac9b47-8bc7-5906-a0fe-35ac56dc84c0"
-version = "7.81.0+0"
+version = "7.84.0+0"
 
 [[deps.LibGit2]]
 deps = ["Base64", "NetworkOptions", "Printf", "SHA"]
@@ -71,9 +82,9 @@ uuid = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
 
 [[deps.Libiconv_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
-git-tree-sha1 = "42b62845d70a619f063a7da093d995ec8e15e778"
+git-tree-sha1 = "c7cb1f5d892775ba13767a87c7ada0b980ea0a71"
 uuid = "94ce4f54-9a6c-5748-9c1c-f9c7231a4531"
-version = "1.16.1+1"
+version = "1.16.1+2"
 
 [[deps.Logging]]
 uuid = "56ddb016-857b-54e1-b83d-db4d58db5568"
@@ -102,9 +113,9 @@ version = "1.8.0"
 
 [[deps.Preferences]]
 deps = ["TOML"]
-git-tree-sha1 = "00cfd92944ca9c760982747e9a1d0d5d86ab1e5a"
+git-tree-sha1 = "47e5f437cc0e7ef2ce8406ce1e7e24d44915f88d"
 uuid = "21216c6a-2e73-6563-6e65-726566657250"
-version = "1.2.2"
+version = "1.3.0"
 
 [[deps.Printf]]
 deps = ["Unicode"]
@@ -141,7 +152,7 @@ version = "1.0.0"
 [[deps.Tar]]
 deps = ["ArgTools", "SHA"]
 uuid = "a4e569a6-e804-4fa4-b0f3-eef7a1d5b13e"
-version = "1.10.0"
+version = "1.10.1"
 
 [[deps.Test]]
 deps = ["InteractiveUtils", "Logging", "Random", "Serialization"]
@@ -149,9 +160,9 @@ uuid = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [[deps.UHDBindings]]
 deps = ["CEnum", "Libdl", "Preferences", "Printf", "USRPHardwareDriver_jll"]
-git-tree-sha1 = "f529f8308785cccbab4f33d83c608058850d4357"
+git-tree-sha1 = "5b8234eb5e0593eb6c316ced3b0d5d94cbbb7f18"
 uuid = "4d90b16f-829e-4b78-80d9-fb9bcf8c06e0"
-version = "0.3.0"
+version = "0.4.0"
 
 [[deps.USRPHardwareDriver_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg", "boost_jll", "libusb_jll"]
@@ -168,15 +179,15 @@ uuid = "4ec0a83e-493e-50e2-b9ac-8f72acf5a8f5"
 
 [[deps.XML2_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Libiconv_jll", "Pkg", "Zlib_jll"]
-git-tree-sha1 = "1acf5bdf07aa0907e0a37d3718bb88d4b687b74a"
+git-tree-sha1 = "58443b63fb7e465a8a7210828c91c08b92132dff"
 uuid = "02c8fc9c-b97f-50b9-bbe4-9be30ff0a78a"
-version = "2.9.12+0"
+version = "2.9.14+0"
 
 [[deps.ZMQ]]
 deps = ["FileWatching", "Sockets", "ZeroMQ_jll"]
-git-tree-sha1 = "fc68e8a3719166950a0f3e390a14c7302c48f8de"
+git-tree-sha1 = "356d2bdcc0bce90aabee1d1c0f6d6f301eda8f77"
 uuid = "c2297ded-f4af-51ae-bb23-16f91089e4e1"
-version = "1.2.1"
+version = "1.2.2"
 
 [[deps.ZeroMQ_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg", "libsodium_jll"]
@@ -187,13 +198,13 @@ version = "4.3.4+0"
 [[deps.Zlib_jll]]
 deps = ["Libdl"]
 uuid = "83775a58-1f1d-513f-b197-d71354ab007a"
-version = "1.2.12+1"
+version = "1.2.12+3"
 
 [[deps.boost_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
-git-tree-sha1 = "ee3aa789316eb452bf6c52ca73b4fbc6806390b3"
+deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg", "Zlib_jll"]
+git-tree-sha1 = "7a89efe0137720ca82f99e8daa526d23120d0d37"
 uuid = "28df3c45-c428-5900-9ff8-a3135698ca75"
-version = "1.76.0+0"
+version = "1.76.0+1"
 
 [[deps.libaio_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -203,9 +214,9 @@ version = "0.3.112+0"
 
 [[deps.libiio_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg", "XML2_jll", "libaio_jll", "libusb_jll"]
-git-tree-sha1 = "3b918bd0ab986f953be3db2e33c49e42a7482521"
+git-tree-sha1 = "e305467a8ce323e5badc69e3033f850353e515cc"
 uuid = "8da1a5bb-246c-59c5-9ba1-a6804f8e92f0"
-version = "0.23.0+0"
+version = "0.24.0+0"
 
 [[deps.librtlsdr_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg", "libusb_jll"]
@@ -220,17 +231,17 @@ uuid = "a9144af2-ca23-56d9-984f-0d03f7b5ccf8"
 version = "1.0.20+0"
 
 [[deps.libusb_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
-git-tree-sha1 = "6cd61968d9ec00371b4d1f68a446de2f53de0aa8"
+deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "Libdl", "Pkg"]
+git-tree-sha1 = "349a49122aa4c63d961613c0762bab90ab3b11c1"
 uuid = "a877fdc9-fe69-5ed6-b93d-11ecd0dc2d49"
-version = "1.0.24+0"
+version = "1.0.26+0"
 
 [[deps.nghttp2_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "8e850ede-7688-5339-a07c-302acd2aaf8d"
-version = "1.41.0+1"
+version = "1.48.0+0"
 
 [[deps.p7zip_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "3f19e933-33d8-53b3-aaab-bd5110c3b7a0"
-version = "16.2.1+1"
+version = "17.4.0+0"

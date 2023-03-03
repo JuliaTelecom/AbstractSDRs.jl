@@ -25,6 +25,14 @@ include("Backends/RTLSDR/RTLSDRBindings.jl");
 @reexport using .RTLSDRBindings
 export RTLSDRBinding
 
+
+# ----------------------------------------------------
+# --- BladeRF bindings
+# ---------------------------------------------------- 
+include("Backends/BladeRF/BladeRFBindings.jl")
+@reexport using .BladeRFBindings 
+export BladeRFBinding
+
 # ----------------------------------------------------
 # --- Socket System
 # ----------------------------------------------------
