@@ -39,8 +39,14 @@ updateSamplingRate!(obj::RTLSDRBinding,tul...) = RTLSDRBindings.updateSamplingRa
 function updateSamplingRate!(obj::PlutoSDR,tul...) 
     # For Adalm Pluto we should also update the RF filter band 
     AdalmPluto.updateSamplingRate!(obj,_toInt.(tul)...);
-    AdalmPluto.updateBandwidth!(obj,_toInt.(tul)...);
-    return getSamplingRate(obj)
+    fs = getSamplingRate(obj)
+    # Which policy ? Here we use 25% roll off 
+    α = 1.00
+    brf = fs * α
+    AdalmPluto.updateBandwidth!(obj,_toInt.(brf)...);
+    # Update ADC policy (filter coefficients) based on frequency 
+    AdalmPluto.ad9361_baseband_auto_rate(C_iio_context_find_device(obj.ctx, "ad9361-phy"), Int(fs));
+    return fs
 end
 
 """
