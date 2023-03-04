@@ -161,11 +161,11 @@ end
 
 function Base.print(rx::RTLSDRRx);
     strF  = @sprintf(" Carrier Frequency: %2.3f MHz\n Sampling Frequency: %2.3f MHz\n",rx.carrierFreq/1e6,rx.samplingRate/1e6)
-    @inforx "Current Simulated Radio Configuration in Rx mode\n$strF"; 
+    @inforx "Current RTL-SDR Radio Configuration in Rx mode\n$strF"; 
 end
 function Base.print(tx::RTLSDRTx);
     strF  = @sprintf(" Carrier Frequency: %2.3f MHz\n Sampling Frequency: %2.3f MHz\n",tx.carrierFreq/1e6,tx.samplingRate/1e6)
-    @infotx "Current Simulated Radio Configuration in Rx mode\n$strF"; 
+    @infotx "Current RTL-SDR Radio Configuration in Rx mode\n$strF"; 
 end
 function Base.print(radio::RTLSDRBinding)
     print(radio.rx);
