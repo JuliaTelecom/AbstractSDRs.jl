@@ -594,7 +594,7 @@ end
     BLADERF_FORMAT_PACKET_META = 2
 end
 
-struct bladerf_metadata
+mutable struct bladerf_metadata
     timestamp::bladerf_timestamp
     flags::UInt32
     status::UInt32
@@ -1261,7 +1261,7 @@ const BLADERF_ERR_WOULD_BLOCK = -18
 const BLADERF_ERR_NOT_INIT = -19
 
 # exports
-const PREFIXES = ["bladerf_"]
+const PREFIXES = ["bladerf_","BLADERF_"]
 for name in names(@__MODULE__; all=true), prefix in PREFIXES
     if startswith(string(name), prefix)
         @eval export $name

@@ -63,6 +63,6 @@ export RadioSim;
 # This type will be used as default fallback methods to handle 2 things 
 # - In case of functions not supported in the given backend to obtain a predictible (and non error) behaviour 
 # - To simplify access to similar backends fields
-AbstractSDR = Union{RadioSim,UHDBinding,PlutoSDR,SDROverNetwork,RTLSDRBinding}
+AbstractSDR = Union{RadioSim,UHDBinding,PlutoSDR,SDROverNetwork,RTLSDRBinding,BladeRFBinding}
 
 

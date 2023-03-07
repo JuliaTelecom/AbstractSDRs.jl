@@ -21,7 +21,7 @@ l = getSupportedSDR()
 - l : Array of symbols of supported SDRs
 """
 function getSupportedSDRs()
-    return [:uhd;:sdr_over_network;:radiosim;:pluto;:rtlsdr];
+    return [:uhd;:sdr_over_network;:radiosim;:pluto;:rtlsdr;:bladerf];
 end
 export getSupportedSDRs
 
@@ -87,6 +87,7 @@ recv(obj::SDROverNetwork,tul...) = SDROverNetworks.recv(obj,tul...);
 recv(obj::UHDBinding,tul...) = UHDBindings.recv(obj,tul...);
 recv(obj::RadioSim,tul...) = RadioSims.recv(obj,tul...);
 recv(obj::RTLSDRBinding,tul...) = RTLSDRBindings.recv(obj,tul...);
+recv(obj::BladeRFBinding,tul...) = BladeRFBindings.recv(obj,tul...);
 recv(obj::PlutoSDR,tul...) = AdalmPluto.recv(obj,tul...);
 export recv;
 
@@ -105,6 +106,7 @@ recv!(sig,obj::SDROverNetwork,tul...) = SDROverNetworks.recv!(sig,obj,tul...);
 recv!(sig,obj::UHDBinding,tul...) = UHDBindings.recv!(sig,obj,tul...);
 recv!(sig,obj::RadioSim,tul...) = RadioSims.recv!(sig,obj,tul...);
 recv!(sig,obj::RTLSDRBinding,tul...) = RTLSDRBindings.recv!(sig,obj,tul...);
+recv!(sig,obj::BladeRFBinding,tul...) = BladeRFBindings.recv!(sig,obj,tul...);
 recv!(sig,obj::PlutoSDR,tul...) = AdalmPluto.recv!(sig,obj,tul...);
 
 
@@ -173,6 +175,9 @@ function openSDR(name::Symbol,tul...;key...)
     elseif name == :rtlsdr
         suppKwargs = [:agc_mode;:tuner_gain_mode]
         radio = openRTLSDR(tul...;parseKeyword(key,suppKwargs)...);
+    elseif name == :bladerf 
+        suppKwargs = [] #FIXME specific bladerf call
+        radio = openBladeRF(tul...;parseKeyword(key,suppKwargs)...);
     elseif name == :pluto
         # --- List of supported keywords 
         suppKwargs = [:addr; :backend; :bufferSize; :bandwidth];

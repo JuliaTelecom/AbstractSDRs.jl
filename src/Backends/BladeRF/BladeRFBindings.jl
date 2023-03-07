@@ -14,16 +14,27 @@ using Printf
 import Base:close;
 
 
-# Exports 
+# Symbols exportation 
 export openBladeRF
+export updateCarrierFreq!;
+export updateSamplingRate!;
+export updateGain!; 
+export recv;
+export recv!;
+export print;
+export BladeRFBinding;
 
+# ----------------------------------------------------
+# --- High level structures 
+# ---------------------------------------------------- 
 mutable struct BladeRFRxWrapper
     channel::Int
-    buffer::Vector{UInt8}
+    buffer::Vector{Int16}
+    ptr_metadata::Ref{bladerf_metadata}
 end
 mutable struct BladeRFTxWrapper
     channel::Int
-    buffer::Vector{UInt8}
+    buffer::Vector{Int16}
 end
 # --- Main Rx structure 
 mutable struct BladeRFRx
@@ -56,8 +67,13 @@ mutable struct BladeRFBinding
     radio::Ref{Ptr{bladerf}}
     rx::BladeRFRx 
     tx::BladeRFTx
+    released::Bool
 end
 
+
+# ----------------------------------------------------
+# --- Methods call
+# ---------------------------------------------------- 
 
 
 """ 
@@ -69,7 +85,7 @@ initEmptyString(n) = String(ones(UInt8,n)*UInt8(32))
 # # Nuand bladeRF 2.0 micro
 # ATTR{idVendor}=="2cf0", ATTR{idProduct}=="5250", MODE="660", GROUP="@BLADERF_GROUP@"
 
-function openBladeRF(carrierFreq,samplingRate,gain;agc_mode=0,tuner_gain_mode=0)
+function openBladeRF(carrierFreq,samplingRate,gain;agc_mode=0,tuner_gain_mode=0,packet_size=4096)
     # ----------------------------------------------------
     # --- Create Empty structure to open radio 
     # ---------------------------------------------------- 
@@ -142,14 +158,27 @@ function openBladeRF(carrierFreq,samplingRate,gain;agc_mode=0,tuner_gain_mode=0)
     bladerf_get_gain(ptr_bladerf[],theChannelTx,container)
     effective_gain = container[] 
 
+    # ----------------------------------------------------
+    # --- Configure Streamer as sync structure 
+    # ---------------------------------------------------- 
+    # API should customize the sync parameter 
+    status = bladerf_sync_config(ptr_bladerf[],BLADERF_RX_X1,BLADERF_FORMAT_SC16_Q11,16,packet_size*2,8,10000)
+    @info "Status for Rx - Sync is $status"
+    # Enable the module
+    status = bladerf_enable_module(ptr_bladerf[], BLADERF_RX, true);
+    @info "Status for Rx Module is $status"
 
-    
+    # Metadata 
+    metadata = bladerf_metadata(bladerf_timestamp(0),BLADERF_META_FLAG_RX_NOW,1,1,ntuple(x->UInt8(1), 32))
+    ptr_metadata = Ref{bladerf_metadata}(metadata);
+
+
     # ----------------------------------------------------
     # --- Wrap all into a custom structure 
     # ----------------------------------------------------  
     # Instantiate a buffer to handle async receive. Size is arbritrary and will be modified afterwards 
-    buffer = zeros(UInt8,512)
-    bladeRFRx = BladeRFRxWrapper(theChannelRx,buffer)
+    buffer = zeros(Int16,packet_size*2)
+    bladeRFRx = BladeRFRxWrapper(theChannelRx,buffer,ptr_metadata)
     bladeRFTx = BladeRFTxWrapper(theChannelTx,buffer)
     rx = BladeRFRx(
                   bladeRFRx,
@@ -158,7 +187,7 @@ function openBladeRF(carrierFreq,samplingRate,gain;agc_mode=0,tuner_gain_mode=0)
                   effective_gain,
                   effective_rf_bandwidth,
                   "RX",
-                  0,
+                  packet_size,
                   0
                  );
     tx = BladeRFTx(
@@ -167,14 +196,15 @@ function openBladeRF(carrierFreq,samplingRate,gain;agc_mode=0,tuner_gain_mode=0)
                   effective_sampling_rate,
                   effective_gain,
                   effective_rf_bandwidth,
-                  "RX",
-                  0,
+                  "TX",
+                  packet_size,
                   0
                  );    
     radio = BladeRFBinding(
                           ptr_bladerf,
                           rx,
-                          tx
+                          tx,
+                          false
     )
     return radio
 end
@@ -269,9 +299,75 @@ function updateGain!(radio::BladeRFBinding,gain)
 end 
 
 
+function recv(radio::BladeRFBinding,nbSamples)
+    #buffer = zeros(Int16,nbSamples * 2) 
+    #status = bladerf_sync_rx(radio.radio[], buffer, nbSamples, radio.rx.bladerf.ptr_metadata, 1000);
+    #return buffer 
+    buffer = zeros(ComplexF32,nbSamples)
+    recv!(buffer,radio)
+    return buffer
+end
+
+
+function recv!(buffer::Vector{Complex{Float32}},radio::BladeRFBinding)
+    nS = length(buffer)
+    p  = radio.rx.packetSize 
+    nbB = nS ÷ p 
+    cnt = 0
+    for k ∈ 0:nbB-1
+        # Populate the blade internal buffer 
+        status = bladerf_sync_rx(radio.radio[], radio.rx.bladerf.buffer, p, radio.rx.bladerf.ptr_metadata, 10000);
+        (status != 0) && (print("O"))
+        # Fill the main buffer 
+        populateBuffer!(buffer, radio.rx.bladerf.buffer,k,p)
+        # Update number of received samples
+        cnt += radio.rx.bladerf.ptr_metadata[].actual_count
+    end
+    return cnt
+end
+
+""" 
+Take the Blade internal buffer and fill the output buffer (ComplexF32)
+"""
+function populateBuffer!(buffer::Vector{ComplexF32},bladeBuffer::Vector{Int16},index,burst_size)
+    for n ∈ 1 : burst_size 
+        buffer[index*burst_size + n] = Float32.(bladeBuffer[2(n-1)+1]) + 1im*Float32.(bladeBuffer[2(n-1)+2])
+    end
+end
+
+#function getError(radio::BladeRFBinding,targetSample=0) #FIXME Radio or radio .rx ? 
+    #status = radio.rx.bladerf.ptr_metadata[].status 
+    #@u
+    #if status != 0 
+        ## We have an error parse it 
+        #if (status & BLADERF_META_STATUS_OVERRUN) == 1
+            #a = radio.rx.bladerf.ptr_metadata[].actual_count
+            #print("O[$a/$targetSample]")
+        #end 
+        #if (status & BLADERF_META_STATUS_UNDERRUN)  == 1
+           #print("U")
+        #end 
+    #end 
+    #return status 
+#end 
+
 """ Destroy and safely release bladeRF object 
 """
 function close(radio::BladeRFBinding)
-    bladerf_close(radio.radio[]);
+    if radio.released == false 
+        # Deactive radio module 
+        status = bladerf_enable_module(radio.radio[], BLADERF_RX, false);
+        # Safely close module
+        bladerf_close(radio.radio[]);
+        radio.released = true 
+        radio.rx.released = true 
+        radio.tx.released = true 
+        @info "BladeRF is closed"
+    else 
+        @warn "Blade RF is already closed and released. Abort"
+    end
+    return nothing
 end
+
+
 end
