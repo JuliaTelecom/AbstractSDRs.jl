@@ -196,5 +196,28 @@ export openSDR;
 
 
 
+""" Ensure that the input buffer has full scale, i.e the input is between -1 and + 1
+This function  is inplace.
+This is usefull for radio that uses Int format, with input that should be normalized.
+2 different policies 
+- :same : A common scaling factor is used for both I anbd Q path 
+- :independant : One scaling is used for real and one scaling is used for imag (default policy: :independent)
+""" 
+function fullScale!(buffer::Vector{Complex{T}},policy=:independent) where T 
+    if policy == :independant 
+        max_i = maximum(abs.(real(buffer)))
+        max_q = maximum(abs.(imag(buffer)))
+    else 
+        max_i = maximum(abs.(real(buffer)))
+        max_q = maximum(abs.(imag(buffer)))
+        (max_i > max_q) && (max_q = max_i)
+        (max_i < max_q) && (max_q = max_q)
+    end
+    for k ∈ eachindex(buffer)
+        buffer[k] = real(buffer[k]) / max_i + 1im*imag(buffer[k]) / max_q 
+    end 
+    return nothing
+end
+
 
 end # module
