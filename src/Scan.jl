@@ -22,7 +22,7 @@ function scan(backend::Union{Nothing,Vector{Symbol}}=nothing;key...)
     # Note that we can not search for SDROverNetwork, RadioSims and RTLSDR
     # TODO => Scan methods for RTLSDR ?
     if isnothing(backend)
-        backend = [:uhd;:pluto;:rtlsdr]
+        backend = getSupportedSDRs()
     end 
     allStr = String[];
     for b in backend 
@@ -91,7 +91,17 @@ function scan(backend::Union{Nothing,Vector{Symbol}}=nothing;key...)
             if nE > 0 
                 push!(allStr,"RTL-SDR USB dongle")
             end
-        end 
+        elseif b == :bladerf 
+            # ----------------------------------------------------
+            # --- BladeRF scanning mode 
+            # ----------------------------------------------------
+            println("------------------------------")
+            println("--- Scan for BladeRF       ---")
+            println("------------------------------")
+            str = BladeRFBindings.scan()
+            (!isempty(str)) && (push!(allStr,str))
+
+        end
     end 
     return allStr
 end
