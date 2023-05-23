@@ -92,8 +92,7 @@ function openBladeRF(carrierFreq,samplingRate,gain;agc_mode=0,packet_size=4096)
     # ---------------------------------------------------- 
     ptr_bladerf = Ref{Ptr{bladerf}}()
     status = bladerf_open(ptr_bladerf,"")
-    @info "Open BladeRF with status $status"
-
+    #@info "Open BladeRF with status $status"
 
     if status < 0 
         @error "Unable to open the BladeRF SDR. Status error $status" 
@@ -102,7 +101,6 @@ function openBladeRF(carrierFreq,samplingRate,gain;agc_mode=0,packet_size=4096)
     # Load FPGA 
     #status = bladerf_load_fpga(ptr_bladerf[],"./hostedxA9.rbf")
     #sleep(1)
-    
 
     rfBandwidth = samplingRate * 0.66
     # ----------------------------------------------------
@@ -116,25 +114,21 @@ function openBladeRF(carrierFreq,samplingRate,gain;agc_mode=0,packet_size=4096)
     container = Ref{bladerf_frequency}(0)
     bladerf_get_frequency(ptr_bladerf[],theChannelRx,container)
     effective_carrierFreq = container[]
-    @info "status carrier freq is $status -> value $(container[])"
 
     # --- Instantiate ADC rate 
     container = Ref{bladerf_sample_rate}(0)
     status = bladerf_set_sample_rate(ptr_bladerf[],theChannelRx,convert(bladerf_sample_rate,samplingRate),container)
-    @info "status sampling is $status -> value $(container[])"
     effective_sampling_rate  = container[]
 
     # --- Instantiate RF band 
     container = Ref{bladerf_bandwidth}(0)
     status = bladerf_set_bandwidth(ptr_bladerf[],theChannelRx,convert(bladerf_bandwidth,rfBandwidth),container)
-    @info "status band is $status-> value $(container[])"
     effective_rf_bandwidth = container[]
 
     # --- Set up gain 
     bladerf_set_gain_mode(ptr_bladerf[],theChannelRx,bladerf_gain_mode(agc_mode))
 
     status = bladerf_set_gain(ptr_bladerf[],theChannelRx,convert(bladerf_gain,gain))
-    @info "status gain is $status"
     container = Ref{bladerf_gain}(0)
     bladerf_get_gain(ptr_bladerf[],theChannelRx,container)
     effective_gain = container[] 
@@ -151,24 +145,20 @@ function openBladeRF(carrierFreq,samplingRate,gain;agc_mode=0,packet_size=4096)
     container = Ref{bladerf_frequency}(0)
     bladerf_get_frequency(ptr_bladerf[],theChannelTx,container)
     effective_carrierFreq = container[]
-    @info "status carrier freq is $status -> value $(container[])"
 
     # --- Instantiate ADC rate 
     container = Ref{bladerf_sample_rate}(0)
     status = bladerf_set_sample_rate(ptr_bladerf[],theChannelTx,convert(bladerf_sample_rate,samplingRate),container)
-    @info "status sampling is $status -> value $(container[])"
     effective_sampling_rate  = container[]
 
     # --- Instantiate RF band 
     container = Ref{bladerf_bandwidth}(0)
     status = bladerf_set_bandwidth(ptr_bladerf[],theChannelTx,convert(bladerf_bandwidth,rfBandwidth),container)
-    @info "status band is $status-> value $(container[])"
     effective_rf_bandwidth = container[]
 
     # --- Set up gain 
     bladerf_set_gain_mode(ptr_bladerf[],theChannelTx,bladerf_gain_mode(agc_mode))
     status = bladerf_set_gain(ptr_bladerf[],theChannelTx,convert(bladerf_gain,gain))
-    @info "status gain is $status"
     container = Ref{bladerf_gain}(0)
     bladerf_get_gain(ptr_bladerf[],theChannelTx,container)
     effective_gain = container[] 
@@ -178,10 +168,8 @@ function openBladeRF(carrierFreq,samplingRate,gain;agc_mode=0,packet_size=4096)
     # ---------------------------------------------------- 
     # API should customize the sync parameter 
     status = bladerf_sync_config(ptr_bladerf[],BLADERF_RX_X1,BLADERF_FORMAT_SC16_Q11,16,packet_size*2,8,10000)
-    @info "Status for Rx - Sync is $status"
     # Enable the module
     status = bladerf_enable_module(ptr_bladerf[], BLADERF_RX, true);
-    @info "Status for Rx Module is $status"
 
     # Metadata 
     metadata_rx = bladerf_metadata(bladerf_timestamp(0),BLADERF_META_FLAG_RX_NOW,1,1,ntuple(x->UInt8(1), 32))
@@ -192,10 +180,8 @@ function openBladeRF(carrierFreq,samplingRate,gain;agc_mode=0,packet_size=4096)
     # ---------------------------------------------------- 
     # API should customize the sync parameter 
     status = bladerf_sync_config(ptr_bladerf[],BLADERF_TX_X1,BLADERF_FORMAT_SC16_Q11,16,packet_size*2,8,10000)
-    @info "Status for Rx - Sync is $status"
     # Enable the module
     status = bladerf_enable_module(ptr_bladerf[], BLADERF_TX, true);
-    @info "Status for Tx Module is $status"
 
     # Metadata 
     flag =  BLADERF_META_FLAG_TX_BURST_START | BLADERF_META_FLAG_TX_NOW |   BLADERF_META_FLAG_TX_BURST_END
@@ -391,7 +377,7 @@ end
 #end 
  
 
-function send(radio::BladeRFBinding,buffer::Vector{Complex{T}}) where {T<:AbstractFloat}
+function send(radio::BladeRFBinding,buffer::Array{Complex{T}},cyclic::Bool =false) where {T<:AbstractFloat}
     # Size of buffer to send 
     nT = length(buffer)
     # Size of internal buffer 
@@ -403,27 +389,32 @@ function send(radio::BladeRFBinding,buffer::Vector{Complex{T}}) where {T<:Abstra
 
     nbE = 0 # Number of elements sent 
     # Buffers 
-    for n ∈ 1 : nbB 
-        # Current buffer 
-        _fill_tx_buffer!(radio.tx.bladerf.buffer,buffer,n,nI)
-        # Conversion to internal representation 
-        status = bladerf_sync_tx(radio.radio[], radio.tx.bladerf.buffer, nI , radio.tx.bladerf.ptr_metadata, 10000);
-        if status == 0
-            nbE += nI
-        else 
-            @error "Error when sending data : Status is $status"
+    while(true)
+        for n ∈ 1 : nbB 
+            # Current buffer 
+            _fill_tx_buffer!(radio.tx.bladerf.buffer,buffer,n,nI)
+            # Conversion to internal representation 
+            status = bladerf_sync_tx(radio.radio[], radio.tx.bladerf.buffer, nI , radio.tx.bladerf.ptr_metadata, 10000);
+            if status == 0
+                nbE += nI
+            else 
+                @error "Error when sending data : Status is $status"
+            end
+        end
+        # Residu 
+        if r > 0 
+            _fill_tx_buffer!(radio.tx.bladerf.buffer,buffer,1+nbB,r)
+            status = bladerf_sync_tx(radio.radio[], radio.tx.bladerf.buffer, r , radio.tx.bladerf.ptr_metadata, 10000);
+            if status == 0
+                nbE += r
+            else 
+                @error "Error when sending data : Status is $status"
+            end
+        end 
+        if cyclic == false 
+            break 
         end
     end
-    # Residu 
-    if r > 0 
-        _fill_tx_buffer!(radio.tx.bladerf.buffer,buffer,1+nbB,r)
-        status = bladerf_sync_tx(radio.radio[], radio.tx.bladerf.buffer, r , radio.tx.bladerf.ptr_metadata, 10000);
-        if status == 0
-            nbE += r
-        else 
-            @error "Error when sending data : Status is $status"
-        end
-    end 
     return nbE
 end
 
