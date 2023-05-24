@@ -392,7 +392,7 @@ function send(radio::BladeRFBinding,buffer::Array{Complex{T}},cyclic::Bool =fals
     while(true)
         for n ∈ 1 : nbB 
             # Current buffer 
-            _fill_tx_buffer!(radio.tx.bladerf.buffer,buffer,n,nI)
+            _fill_tx_buffer!(radio.tx.bladerf.buffer,buffer,(n-1)*nI,nI)
             # Conversion to internal representation 
             status = bladerf_sync_tx(radio.radio[], radio.tx.bladerf.buffer, nI , radio.tx.bladerf.ptr_metadata, 10000);
             if status == 0
@@ -403,7 +403,7 @@ function send(radio::BladeRFBinding,buffer::Array{Complex{T}},cyclic::Bool =fals
         end
         # Residu 
         if r > 0 
-            _fill_tx_buffer!(radio.tx.bladerf.buffer,buffer,1+nbB,r)
+            _fill_tx_buffer!(radio.tx.bladerf.buffer,buffer,nbB*nI,r)
             status = bladerf_sync_tx(radio.radio[], radio.tx.bladerf.buffer, r , radio.tx.bladerf.ptr_metadata, 10000);
             if status == 0
                 nbE += r
@@ -418,11 +418,11 @@ function send(radio::BladeRFBinding,buffer::Array{Complex{T}},cyclic::Bool =fals
     return nbE
 end
 
-function _fill_tx_buffer!(internal_buffer,buffer,n,nI)
+function _fill_tx_buffer!(internal_buffer,buffer,offset,nI)
     vM = typemax(Int16) 
     @inbounds @simd for k ∈ 1 : nI 
-        internal_buffer[2*(k-1)+1] = Int16(round(real(buffer[ (n-1)*nI + k] * vM)))
-        internal_buffer[2*(k-1)+2] = Int16(round(imag(buffer[ (n-1)*nI + k] * vM)))
+        internal_buffer[2*(k-1)+1] = Int16(round(real(buffer[ offset + k] * vM)))
+        internal_buffer[2*(k-1)+2] = Int16(round(imag(buffer[ offset + k] * vM)))
     end 
     return nothing
 end
