@@ -16,6 +16,7 @@ updateCarrierFreq!(obj::SDROverNetwork,tul...) = SDROverNetworks.updateCarrierFr
 updateCarrierFreq!(obj::UHDBinding,tul...) = UHDBindings.updateCarrierFreq!(obj,tul...);
 updateCarrierFreq!(obj::RadioSim,tul...) = RadioSims.updateCarrierFreq!(obj,tul...);
 updateCarrierFreq!(obj::RTLSDRBinding,tul...) = RTLSDRBindings.updateCarrierFreq!(obj,tul...);
+updateCarrierFreq!(obj::BladeRFBinding,tul...) = BladeRFBindings.updateCarrierFreq!(obj,tul...);
 function updateCarrierFreq!(obj::PlutoSDR,tul...)
     # In pluto we only get a flag so we need to call to the accessor
     AdalmPluto.updateCarrierFreq!(obj,_toInt.(tul)...);
@@ -36,11 +37,21 @@ updateSamplingRate!(obj::SDROverNetwork,tul...) = SDROverNetworks.updateSampling
 updateSamplingRate!(obj::UHDBinding,tul...) = UHDBindings.updateSamplingRate!(obj,tul...);
 updateSamplingRate!(obj::RadioSim,tul...) = RadioSims.updateSamplingRate!(obj,tul...);
 updateSamplingRate!(obj::RTLSDRBinding,tul...) = RTLSDRBindings.updateSamplingRate!(obj,tul...);
+function updateSamplingRate!(obj::BladeRFBinding,tul...)
+    BladeRFBindings.updateSamplingRate!(obj,tul...);
+    BladeRFBindings.updateRFBandwidth!(obj,tul...);
+end 
 function updateSamplingRate!(obj::PlutoSDR,tul...) 
     # For Adalm Pluto we should also update the RF filter band 
     AdalmPluto.updateSamplingRate!(obj,_toInt.(tul)...);
-    AdalmPluto.updateBandwidth!(obj,_toInt.(tul)...);
-    return getSamplingRate(obj)
+    fs = getSamplingRate(obj)
+    # Which policy ? Here we use 25% roll off 
+    α = 1.00
+    brf = fs * α
+    AdalmPluto.updateBandwidth!(obj,_toInt.(brf)...);
+    # Update ADC policy (filter coefficients) based on frequency 
+    AdalmPluto.ad9361_baseband_auto_rate(C_iio_context_find_device(obj.ctx, "ad9361-phy"), Int(fs));
+    return fs
 end
 
 """
@@ -58,6 +69,7 @@ updateGain!(obj::SDROverNetwork,tul...) = SDROverNetworks.updateGain!(obj,tul...
 updateGain!(obj::UHDBinding,tul...) = UHDBindings.updateGain!(obj,tul...);
 updateGain!(obj::RadioSim,tul...) = RadioSims.updateGain!(obj,tul...);
 updateGain!(obj::RTLSDRBinding,tul...) = RTLSDRBindings.updateGain!(obj,tul...);
+updateGain!(obj::BladeRFBinding,tul...) = BladeRFBindings.updateGain!(obj,tul...);
 function updateGain!(obj::PlutoSDR,tul...) 
     # In pluto we only get a flag so we have to access to gain value to return the updated gain value 
     AdalmPluto.updateGain!(obj,_toInt.(tul)...);

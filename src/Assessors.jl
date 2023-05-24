@@ -7,32 +7,36 @@ getError(obj::UHDBinding) = UHDBindings.getError(obj);
 getError(obj::RadioSim) = RadioSims.getError(obj);
 getError(obj::SDROverNetwork) = SDROverNetworks.getMD(obj)[3];
 getError(obj::RTLSDRBinding) = RTLSDRBindings.getError(obj);
+getError(obj::BladeRFBinding) = BladeRFBindings.getError(obj);
 
 getTimestamp(obj::UHDBinding) = UHDBindings.getTimestamp(obj);
 getTimestamp(obj::RadioSim) = RadioSims.getTimestamp(obj);
 getTimestamp(obj::SDROverNetwork) = SDROverNetworks.getMD(obj)[1:2];
 getTimestamp(obj::RTLSDRBinding) = RTLSDRBindings.getTimestamp(obj);
+getTimestamp(obj::BladeRFBinding) = BladeRFBindings.getTimestamp(obj);
+
+
 
 """ 
 Get the current sampling rate of the radio device 
 The second parameter (optionnal) speicfies the Rx or Tx board (default : Rx)
 """ 
-getSamplingRate(obj::AbstractSDR;mode=:rx) = ((mode == :rx) ? obj.rx.samplingRate : obj.tx.samplingRate)
-getSamplingRate(obj::PlutoSDR;mode=:rx) = ((mode == :rx) ? obj.rx.effectiveSamplingRate : obj.tx.effectiveSamplingRate)
+getSamplingRate(obj::AbstractSDR;mode=:rx) = ((mode == :rx) ? Float64(obj.rx.samplingRate) : Float64(obj.tx.samplingRate))
+getSamplingRate(obj::PlutoSDR;mode=:rx) = ((mode == :rx) ? Float64(obj.rx.effectiveSamplingRate) : Float64(obj.tx.effectiveSamplingRate))
 
 """ 
 Get the current carrier frequency   of the radio device 
 The second parameter (optionnal) speicfies the Rx or Tx board (default : Rx)
 """ 
-getCarrierFreq(obj::AbstractSDR;mode=:rx) = (mode == :rx) ? obj.rx.carrierFreq : obj.tx.carrierFreq
-getCarrierFreq(obj::PlutoSDR;mode=:rx) = (mode == :rx) ? obj.rx.effectiveCarrierFreq : obj.tx.effectiveCarrierFreq
+getCarrierFreq(obj::AbstractSDR;mode=:rx) = (mode == :rx) ? Float64(obj.rx.carrierFreq) : Float64(obj.tx.carrierFreq)
+getCarrierFreq(obj::PlutoSDR;mode=:rx) = (mode == :rx) ? Float64(obj.rx.effectiveCarrierFreq) : Float64(obj.tx.effectiveCarrierFreq)
 
 
 """ 
 Get the current radio gain 
 The second parameter (optionnal) specifies the Rx or Tx board (default : Rx)
 """
-getGain(obj::AbstractSDR;mode=:rx) = (mode == :rx) ? obj.rx.gain : obj.tx.gain 
+getGain(obj::AbstractSDR;mode=:rx) = (mode == :rx) ? Float64(obj.rx.gain) : Float64(obj.tx.gain) 
 getGain(obj::PlutoSDR;mode=:rx) = AdalmPluto.getGain(obj)
 
 

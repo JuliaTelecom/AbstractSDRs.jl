@@ -21,7 +21,7 @@ l = getSupportedSDR()
 - l : Array of symbols of supported SDRs
 """
 function getSupportedSDRs()
-    return [:uhd;:sdr_over_network;:radiosim;:pluto;:rtlsdr];
+    return [:uhd;:sdr_over_network;:radiosim;:pluto;:rtlsdr;:bladerf];
 end
 export getSupportedSDRs
 
@@ -87,6 +87,7 @@ recv(obj::SDROverNetwork,tul...) = SDROverNetworks.recv(obj,tul...);
 recv(obj::UHDBinding,tul...) = UHDBindings.recv(obj,tul...);
 recv(obj::RadioSim,tul...) = RadioSims.recv(obj,tul...);
 recv(obj::RTLSDRBinding,tul...) = RTLSDRBindings.recv(obj,tul...);
+recv(obj::BladeRFBinding,tul...) = BladeRFBindings.recv(obj,tul...);
 recv(obj::PlutoSDR,tul...) = AdalmPluto.recv(obj,tul...);
 export recv;
 
@@ -105,6 +106,7 @@ recv!(sig,obj::SDROverNetwork,tul...) = SDROverNetworks.recv!(sig,obj,tul...);
 recv!(sig,obj::UHDBinding,tul...) = UHDBindings.recv!(sig,obj,tul...);
 recv!(sig,obj::RadioSim,tul...) = RadioSims.recv!(sig,obj,tul...);
 recv!(sig,obj::RTLSDRBinding,tul...) = RTLSDRBindings.recv!(sig,obj,tul...);
+recv!(sig,obj::BladeRFBinding,tul...) = BladeRFBindings.recv!(sig,obj,tul...);
 recv!(sig,obj::PlutoSDR,tul...) = AdalmPluto.recv!(sig,obj,tul...);
 
 
@@ -122,9 +124,10 @@ send(radio,buffer,cyclic=false)
 """
 
 send(obj::SDROverNetwork,sig,tul...;kwarg...) = SDROverNetworks.send(obj,sig,tul...;kwarg...);
-send(obj::UHDBinding,sig,tul...) = UHDBindings.send(obj,sig,tul...)
-send(obj::RadioSim,sig,tul...) = RadioSims.send(obj,sig,tul...)
-send(obj::RTLSDRBinding,sig,tul...) = RTLSDRBindings.send(obj,sig,tul...)
+send(obj::UHDBinding,sig,tul...;kwarg...) = UHDBindings.send(obj,sig,tul...)
+send(obj::RadioSim,sig,tul...;kwarg...) = RadioSims.send(obj,sig,tul...)
+send(obj::RTLSDRBinding,sig,tul...;kwarg...) = RTLSDRBindings.send(obj,sig,tul...)
+send(obj::BladeRFBinding,sig,tul...;kwarg...) = BladeRFBindings.send(obj,sig,tul...)
 send(obj::PlutoSDR,sig,tul...;kwarg...) = AdalmPluto.send(obj,sig,tul...;parseKeyword(kwarg,[:use_internal_buffer])...)
 export send
 
@@ -173,6 +176,9 @@ function openSDR(name::Symbol,tul...;key...)
     elseif name == :rtlsdr
         suppKwargs = [:agc_mode;:tuner_gain_mode]
         radio = openRTLSDR(tul...;parseKeyword(key,suppKwargs)...);
+    elseif name == :bladerf 
+        suppKwargs = [] #FIXME specific bladerf call
+        radio = openBladeRF(tul...;parseKeyword(key,suppKwargs)...);
     elseif name == :pluto
         # --- List of supported keywords 
         suppKwargs = [:addr; :backend; :bufferSize; :bandwidth];
@@ -189,6 +195,29 @@ end
 export openSDR;
 
 
+
+""" Ensure that the input buffer has full scale, i.e the input is between -1 and + 1
+This function  is inplace.
+This is usefull for radio that uses Int format, with input that should be normalized.
+2 different policies 
+- :same : A common scaling factor is used for both I anbd Q path 
+- :independant : One scaling is used for real and one scaling is used for imag (default policy: :independent)
+""" 
+function fullScale!(buffer::Vector{Complex{T}},policy=:independent) where T 
+    if policy == :independant 
+        max_i = maximum(abs.(real(buffer)))
+        max_q = maximum(abs.(imag(buffer)))
+    else 
+        max_i = maximum(abs.(real(buffer)))
+        max_q = maximum(abs.(imag(buffer)))
+        (max_i > max_q) && (max_q = max_i)
+        (max_i < max_q) && (max_q = max_q)
+    end
+    for k ∈ eachindex(buffer)
+        buffer[k] = real(buffer[k]) / max_i + 1im*imag(buffer[k]) / max_q 
+    end 
+    return nothing
+end
 
 
 end # module

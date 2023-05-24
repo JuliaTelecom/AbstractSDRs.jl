@@ -46,13 +46,13 @@ function check_open(sdrName)
    # SDR is not released yet 
    @test isClosed(sdr) == false
    # Configuration : Carrier Freq 
-   @test getCarrierFreq(sdr) == carrierFreq
-   @test getCarrierFreq(sdr,mode=:rx) == carrierFreq
-   @test getCarrierFreq(sdr,mode=:tx) == carrierFreq
+   @test getCarrierFreq(sdr) ≈ carrierFreq
+   @test getCarrierFreq(sdr,mode=:rx) ≈ carrierFreq
+   @test getCarrierFreq(sdr,mode=:tx) ≈ carrierFreq
    # Configuration : Bandwidth 
    @test getSamplingRate(sdr) == samplingRate
-   @test getSamplingRate(sdr,mode=:rx) == samplingRate
-   @test getSamplingRate(sdr,mode=:tx) == samplingRate
+   @test getSamplingRate(sdr,mode=:rx) ≈ samplingRate
+   @test getSamplingRate(sdr,mode=:tx) ≈ samplingRate
    # --- We close the SDR 
    close(sdr)
    @test isClosed(sdr) == true
@@ -70,14 +70,14 @@ function check_carrierFreq(sdrName)
    global sdr = openSDR(sdrName,carrierFreq, samplingRate, gain;args="addr=$UHD_ADDRESS");
    #  Classic value, should work 
    updateCarrierFreq!(sdr,800e6)
-   @test getCarrierFreq(sdr) == 800e6
-   @test getCarrierFreq(sdr,mode=:rx) == 800e6
-   @test getCarrierFreq(sdr,mode=:tx) == 800e6
+   @test getCarrierFreq(sdr) ≈ 800e6
+   @test getCarrierFreq(sdr,mode=:rx) ≈ 800e6
+   @test getCarrierFreq(sdr,mode=:tx) ≈ 800e6
    # Targeting WiFi, should work
    updateCarrierFreq!(sdr,2400e6)
-   @test getCarrierFreq(sdr) == 2400e6
-   @test getCarrierFreq(sdr,mode=:rx) == 2400e6
-   @test getCarrierFreq(sdr,mode=:tx) == 2400e6
+   @test getCarrierFreq(sdr) ≈ 2400e6
+   @test getCarrierFreq(sdr,mode=:rx) ≈ 2400e6
+   @test getCarrierFreq(sdr,mode=:tx) ≈ 2400e6
    # If we specify a out of range frequency, it should bound to max val
    # TODO Check that is should be max freq range, but don't know the range as different USRP may be used
    # Adding tables with various ranges to check taht this is the expected value ?
@@ -104,14 +104,14 @@ function check_samplingRate(sdrName)
    global sdr = openSDR(sdrName,carrierFreq, samplingRate, gain;args="addr=$UHD_ADDRESS");
    #  Classic value, should work 
    updateSamplingRate!(sdr,8e6)
-   @test getSamplingRate(sdr) == 8e6
-   @test getSamplingRate(sdr,mode=:rx) == 8e6
-   @test getSamplingRate(sdr,mode=:tx) == 8e6
+   @test getSamplingRate(sdr) ≈ 8e6
+   @test getSamplingRate(sdr,mode=:rx) ≈ 8e6
+   @test getSamplingRate(sdr,mode=:tx) ≈ 8e6
    # Targeting WiFi, should work
    updateSamplingRate!(sdr,15.36e6)
-   @test getSamplingRate(sdr) == 15.36e6
-   @test getSamplingRate(sdr,mode=:rx) == 15.36e6
-   @test getSamplingRate(sdr,mode=:tx) == 15.36e6
+   @test getSamplingRate(sdr) ≈ 15.36e6
+   @test getSamplingRate(sdr,mode=:rx) ≈ 15.36e6
+   @test getSamplingRate(sdr,mode=:tx) ≈ 15.36e6
    # If we specify a out of range frequency, it should bound to max val
    eS = updateSamplingRate!(sdr,1e9)
    # @test getSamplingRate(sdr) != 100e9
@@ -128,8 +128,9 @@ end
 Check the gain update for the USRP device
 """
 function check_gain(sdrName)
-    if sdrName == :rtlsdr 
+    if sdrName == :rtlsdr || sdrName == :bladerf 
         # No gain support for RTLSDR
+        # Auto gain fro bladerf 
     else 
         # --- Main parameters 
         carrierFreq		= 440e6;	# --- The carrier frequency 	

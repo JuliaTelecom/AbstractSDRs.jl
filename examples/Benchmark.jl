@@ -32,6 +32,7 @@ function main(radio,samplingRate,mode=:rx)
 	# We will get complex samples from recv! method
 	# Fill with random value, as it will be overwritten (and not zero for tx benchmark)
 	sig		  = randn(Complex{Cfloat},nbSamples); 
+    AbstractSDRs.fullScale!(sig)
 	# --- Targeting 2 seconds acquisition
 	# Init counter increment
 	nS		  = 0;
@@ -41,7 +42,8 @@ function main(radio,samplingRate,mode=:rx)
 	if mode == :rx
 		pInit 			= recv!(sig,radio);
 	else 
-		pInit 	=send(sig,radio,true;maxNumSamp=nbBuffer); 
+		#pInit 	=send(sig,radio,true;maxNumSamp=nbBuffer); 
+        pInit = send(radio,sig)
 	end
 	timeInit  	= time();
 	while true
@@ -51,7 +53,8 @@ function main(radio,samplingRate,mode=:rx)
 			# --- Update counter
 			nS		+= p;
 		elseif mode == :tx
-			p = send(sig,radio,true;maxNumSamp=nbBuffer);
+			#p = send(sig,radio,true;maxNumSamp=nbBuffer);
+            p = send(radio,sig)
 			nS += p;
 		end
 		# --- Interruption 
@@ -68,16 +71,17 @@ function main(radio,samplingRate,mode=:rx)
 	return (radioRate,effectiveRate);
 end
 
-function test(radioName,samplingRate;args,duration=2)
+function test(radioName,samplingRate;duration=2,kw...)
 	# ---------------------------------------------------- 
 	# --- Physical layer and RF parameters 
 	# ---------------------------------------------------- 
 	# --- Create the radio object in function
 	carrierFreq		= 770e6;		
 	gain			= 50.0; 
-    radio = openSDR(radioName,carrierFreq,samplingRate,gain;args)
+    radio = openSDR(radioName,carrierFreq,samplingRate,gain;kw...)
 	# --- Print the configuration
 	print(radio);
+    @show getBufferSize(radio)
 	# --- Init parameters 
 	# Get the radio size for buffer pre-allocation
     nbSamples 		= getBufferSize(radio)
