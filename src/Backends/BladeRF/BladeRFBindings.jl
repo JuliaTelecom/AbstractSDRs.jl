@@ -194,10 +194,11 @@ function openBladeRF(carrierFreq,samplingRate,gain;agc_mode=0,packet_size=4096)
     # --- Wrap all into a custom structure 
     # ----------------------------------------------------  
     # Instantiate a buffer to handle async receive. Size is arbritrary and will be modified afterwards 
-    buffer = zeros(Int16,packet_size*2)
-    bladeRFRx = BladeRFRxWrapper(theChannelRx,buffer,ptr_metadata_rx)
-    bladeRFTx = BladeRFTxWrapper(theChannelTx,buffer,ptr_metadata_tx)
-    rx = BladeRFRx(
+    bufferTx = zeros(Int16,packet_size*2)
+    bufferRx = zeros(Int16,packet_size*2)
+    bladeRFRx = BladeRFRxWrapper(theChannelRx,bufferRx,ptr_metadata_rx)
+    bladeRFTx = BladeRFTxWrapper(theChannelTx,bufferTx,ptr_metadata_tx)
+        rx = BladeRFRx(
                   bladeRFRx,
                   effective_carrierFreq,
                   effective_sampling_rate,
@@ -232,7 +233,7 @@ function Base.print(rx::BladeRFRx);
 end
 function Base.print(tx::BladeRFTx);
     strF  = @sprintf("Carrier Frequency: %2.3f MHz\nSampling Frequency: %2.3f MHz\nRF Bandwidth: %2.3f MHz\nGain: %2.3f",tx.carrierFreq/1e6,tx.samplingRate/1e6,tx.rfBandwidth/1e6,tx.gain)
-    @infotx "Current BladeRF Radio Configuration in Rx mode\n$strF"; 
+    @infotx "Current BladeRF Radio Configuration in Tx mode\n$strF"; 
 end
 function Base.print(radio::BladeRFBinding)
     print(radio.rx);
@@ -421,8 +422,8 @@ end
 function _fill_tx_buffer!(internal_buffer,buffer,offset,nI)
     vM = typemax(Int16) 
     @inbounds @simd for k ∈ 1 : nI 
-        internal_buffer[2*(k-1)+1] = Int16(round(real(buffer[ offset + k] * vM)))
-        internal_buffer[2*(k-1)+2] = Int16(round(imag(buffer[ offset + k] * vM)))
+        internal_buffer[2*(k-1)+1] = Int16(round(real(buffer[ offset + k] * vM))) >> 4
+        internal_buffer[2*(k-1)+2] = Int16(round(imag(buffer[ offset + k] * vM))) >> 4
     end 
     return nothing
 end

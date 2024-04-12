@@ -79,7 +79,7 @@ If you use `AbstractSDRs.jl` we encourage you to cite this work that you can fin
 
 ## Backends 
 
-AbstractSDRs wraps and implements different SDR backends that can be used when opening a radio device. The current list of supported SDR backends can be obtained via `getSupportedSDR`. 
+AbstractSDRs wraps and implements different SDR backends that can be used when opening a radio device. The current list of supported SDR backends can be obtained via `getSupportedSDRs`. 
 When instantiate a radio device (with `openSDR`), the first argument is the radio backend and parameters associated to a specific backend can be used with keywords. 
 Some specific functions can also be exported based in the selected backend. The list is given in the sub-backend part  
 
@@ -114,3 +114,9 @@ This backend can be used with ADALM Pluto SDR device.
 ## Documentation
 
 - [**STABLE**](https://juliatelecom.github.io/AbstractSDRs.jl/dev/index.html) &mdash; **documentation of the most recently tagged version.**
+
+
+
+## Changelog 
+
+- 0.5.1 : Correct potential bug in data overflow for bladeRF backend
