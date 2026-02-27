@@ -285,7 +285,7 @@ end
 
 """ Update the sampling frequency 
 """ 
-function updateRFBandwidth!(radio::BladeRFBinding,rfBandwidth)
+function updateBandwidth!(radio::BladeRFBinding,rfBandwidth)
     # Rx Head 
     container = Ref{bladerf_bandwidth}(0)
     status = bladerf_set_bandwidth(radio.radio[],getChannel(radio.rx),convert(bladerf_bandwidth,rfBandwidth),container)
@@ -338,7 +338,7 @@ function recv!(buffer::Vector{Complex{Float32}},radio::BladeRFBinding)
         status = bladerf_sync_rx(radio.radio[], radio.rx.bladerf.buffer, p, radio.rx.bladerf.ptr_metadata, 10000);
         (status != 0) && (print("O"))
         # Fill the main buffer 
-        populateBuffer!(buffer, radio.rx.bladerf.buffer,k,p)
+        populateBuffer!(buffer, radio.rx.bladerf.buffer,k*p,p)
         # Update number of received samples
         cnt += radio.rx.bladerf.ptr_metadata[].actual_count
     end
@@ -346,7 +346,7 @@ function recv!(buffer::Vector{Complex{Float32}},radio::BladeRFBinding)
     residu = nS - nbB*p 
     if residu > 0 
         bladerf_sync_rx(radio.radio[], radio.rx.bladerf.buffer, residu, radio.rx.bladerf.ptr_metadata, 10000);
-        populateBuffer!(buffer, radio.rx.bladerf.buffer,nbB,residu)
+        populateBuffer!(buffer, radio.rx.bladerf.buffer,nbB*p,residu)
     end
     return cnt
 end
@@ -357,7 +357,7 @@ Take the Blade internal buffer and fill the output buffer (ComplexF32)
 function populateBuffer!(buffer::Vector{ComplexF32},bladeBuffer::Vector{Int16},index,burst_size)
     c = typemax(Int16)
     for n ∈ 1 : burst_size 
-        buffer[index*burst_size + n] = Float32.(bladeBuffer[2(n-1)+1])/c + 1im*Float32.(bladeBuffer[2(n-1)+2])/c
+        buffer[index + n] = Float32.(bladeBuffer[2(n-1)+1])/c + 1im*Float32.(bladeBuffer[2(n-1)+2])/c
     end
 end
 
