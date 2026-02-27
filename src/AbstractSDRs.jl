@@ -52,6 +52,7 @@ export scan
 include("Mutators.jl")
 export updateCarrierFreq!
 export updateSamplingRate!
+export updateBandwidth!
 export updateGain!
 export updateGainMode!
 
@@ -177,7 +178,7 @@ function openSDR(name::Symbol,tul...;key...)
         suppKwargs = [:agc_mode;:tuner_gain_mode]
         radio = openRTLSDR(tul...;parseKeyword(key,suppKwargs)...);
     elseif name == :bladerf 
-        suppKwargs = [] #FIXME specific bladerf call
+        suppKwargs = [:agc_mode] #FIXME specific bladerf call
         radio = openBladeRF(tul...;parseKeyword(key,suppKwargs)...);
     elseif name == :pluto
         # --- List of supported keywords 

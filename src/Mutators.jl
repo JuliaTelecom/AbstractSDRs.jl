@@ -76,6 +76,24 @@ function updateGain!(obj::PlutoSDR,tul...)
     return getGain(obj)
 end
 
+"""
+Update RF bandwidth (if different from the one piloted by updateSamplingRate).
+Valid for AdalmPluto and BladeRF
+# --- Syntax
+updateBandwidth!(radio,gain)
+# --- Input parameters
+- radio	  : SDR device
+- RF band	: New band 
+# --- Output parameters
+- gain : New band
+"""
+updateBandwidth!(obj::SDROverNetwork,tul...) = getSamplingRate(obj)
+updateBandwidth!(obj::UHDBinding,tul...) = getSamplingRate(obj)
+updateBandwidth!(obj::RadioSim,tul...) = getSamplingRate(obj)
+updateBandwidth!(obj::RTLSDRBinding,tul...) = getSamplingRate(obj)
+updateBandwidth!(obj::BladeRFBinding,tul...) =BladeRFBindings.updateBandwidth!(obj,tul...) 
+updateBandwidth!(obj::PlutoSDR,tul...) = AdalmPluto.updateBandwidth!(obj,tul...) 
+
 
 """ 
 Define Gain policy for the SDR radio. Only supported on AdalmPluto 
