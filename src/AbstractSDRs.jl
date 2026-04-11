@@ -21,7 +21,7 @@ l = getSupportedSDR()
 - l : Array of symbols of supported SDRs
 """
 function getSupportedSDRs()
-    return [:uhd;:sdr_over_network;:radiosim;:pluto;:rtlsdr;:bladerf];
+    return [:uhd;:radiosim;:pluto;:rtlsdr;:bladerf];
 end
 export getSupportedSDRs
 
@@ -84,7 +84,6 @@ Receive nbSamples from the SDR and fill them in the output buffer. The buffer fo
 # --- Output parameters
 - buffer : Output buffer from the radio filled with nbSamples samples
 """
-recv(obj::SDROverNetwork,tul...) = SDROverNetworks.recv(obj,tul...);
 recv(obj::UHDBinding,tul...) = UHDBindings.recv(obj,tul...);
 recv(obj::RadioSim,tul...) = RadioSims.recv(obj,tul...);
 recv(obj::RTLSDRBinding,tul...) = RTLSDRBindings.recv(obj,tul...);
@@ -103,7 +102,6 @@ Receive from the SDR and fill them in the input buffer.
 # --- Output parameters
 - nbSamples : Number of samples filled
 """
-recv!(sig,obj::SDROverNetwork,tul...) = SDROverNetworks.recv!(sig,obj,tul...);
 recv!(sig,obj::UHDBinding,tul...) = UHDBindings.recv!(sig,obj,tul...);
 recv!(sig,obj::RadioSim,tul...) = RadioSims.recv!(sig,obj,tul...);
 recv!(sig,obj::RTLSDRBinding,tul...) = RTLSDRBindings.recv!(sig,obj,tul...);
@@ -124,7 +122,6 @@ send(radio,buffer,cyclic=false)
 - nbEch 	: Number of samples effectively send [Csize_t]. It corresponds to the number of complex samples sent.
 """
 
-send(obj::SDROverNetwork,sig,tul...;kwarg...) = SDROverNetworks.send(obj,sig,tul...;kwarg...);
 send(obj::UHDBinding,sig,tul...;kwarg...) = UHDBindings.send(obj,sig,tul...)
 send(obj::RadioSim,sig,tul...;kwarg...) = RadioSims.send(obj,sig,tul...)
 send(obj::RTLSDRBinding,sig,tul...;kwarg...) = RTLSDRBindings.send(obj,sig,tul...)
@@ -150,27 +147,6 @@ function openSDR(name::Symbol,tul...;key...)
     if name == :uhd
         suppKwargs = [:args;:channels;:antennas;:cpu_format;:otw_format;:subdev;:nbAntennaRx;:nbAntennaTx;:bypassStreamer];
         radio = openUHD(tul...;parseKeyword(key,suppKwargs)...);
-    elseif (name == :sdr_over_network || name == :e310)
-        suppKwargs = [:addr];
-        keyOut = parseKeyword(key,suppKwargs);
-        if haskey(key,:args)
-            # For UHDBindings IP address is set as args="addr=192.168.10.14". We want to support this
-            # We look at args and find addr inside and extract the IP address. Then create a dict entry
-            str = key[:args];
-            ind = findfirst("addr",str)[1];
-            # If addr flag is here, convert it into IP
-            if ~isnothing(ind)
-                # --- Getting end of parameter
-                indV = findfirst(",",str[ind:end]);
-                # --- If last parameters, get the compelte string
-                (isnothing(indV)) ? indF = length(str) : indF = indV[1];;
-                # --- Extract ip address
-                ip = str[ind+5:indF];
-                # --- Create a new input in dictionnary
-                keyOut[:addr] = ip;
-            end
-        end
-        radio = openUhdOverNetwork(tul...;keyOut...);
     elseif (name == :radiosim)
         suppKwargs = [:packetSize;:scaleSleep;:buffer];
         radio = openRadioSim(tul...;parseKeyword(key,suppKwargs)...);

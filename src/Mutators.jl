@@ -12,7 +12,6 @@ updateCarrierFreq!(radio,carrierFreq)
 # --- Output parameters
 - carrierFreq : Effective carrier frequency
 """
-updateCarrierFreq!(obj::SDROverNetwork,tul...) = SDROverNetworks.updateCarrierFreq!(obj,tul...);
 updateCarrierFreq!(obj::UHDBinding,tul...) = UHDBindings.updateCarrierFreq!(obj,tul...);
 updateCarrierFreq!(obj::RadioSim,tul...) = RadioSims.updateCarrierFreq!(obj,tul...);
 updateCarrierFreq!(obj::RTLSDRBinding,tul...) = RTLSDRBindings.updateCarrierFreq!(obj,tul...);
@@ -33,7 +32,6 @@ updateSamplingRate!(radio,samplingRate)
 # --- Output parameters
 - samplingRate : Effective sampling rate
 """
-updateSamplingRate!(obj::SDROverNetwork,tul...) = SDROverNetworks.updateSamplingRate!(obj,tul...);
 updateSamplingRate!(obj::UHDBinding,tul...) = UHDBindings.updateSamplingRate!(obj,tul...);
 updateSamplingRate!(obj::RadioSim,tul...) = RadioSims.updateSamplingRate!(obj,tul...);
 updateSamplingRate!(obj::RTLSDRBinding,tul...) = RTLSDRBindings.updateSamplingRate!(obj,tul...);
@@ -65,7 +63,6 @@ updateGain!(radio,gain)
 # --- Output parameters
 - gain : New gain value
 """
-updateGain!(obj::SDROverNetwork,tul...) = SDROverNetworks.updateGain!(obj,tul...);
 updateGain!(obj::UHDBinding,tul...) = UHDBindings.updateGain!(obj,tul...);
 updateGain!(obj::RadioSim,tul...) = RadioSims.updateGain!(obj,tul...);
 updateGain!(obj::RTLSDRBinding,tul...) = RTLSDRBindings.updateGain!(obj,tul...);
@@ -87,7 +84,6 @@ updateBandwidth!(radio,gain)
 # --- Output parameters
 - gain : New band
 """
-updateBandwidth!(obj::SDROverNetwork,tul...) = getSamplingRate(obj)
 updateBandwidth!(obj::UHDBinding,tul...) = getSamplingRate(obj)
 updateBandwidth!(obj::RadioSim,tul...) = getSamplingRate(obj)
 updateBandwidth!(obj::RTLSDRBinding,tul...) = getSamplingRate(obj)
@@ -100,4 +96,3 @@ Define Gain policy for the SDR radio. Only supported on AdalmPluto
 """ 
 updateGainMode!(sdr::AbstractSDR) = "manual"
 # No need to redefine  for Pluto backend
-

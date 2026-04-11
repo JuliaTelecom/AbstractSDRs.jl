@@ -34,18 +34,6 @@ include("Backends/BladeRF/BladeRFBindings.jl")
 export BladeRFBinding
 
 # ----------------------------------------------------
-# --- Socket System
-# ----------------------------------------------------
-# --- Create and load module to pilot E310 devices
-# To control this device we create a pure Socket based system
-# for which the AbstractSDRs package will help to bind the utils
-# Have a look on minimalTransceiver.jl for the code to be ran on E310
-include("Backends/SDROverNetworks.jl");
-@reexport using .SDROverNetworks
-# --- Specific E310 related functions
-export SDROverNetwork;
-
-# ----------------------------------------------------
 # --- Simulation Radio
 # ----------------------------------------------------
 # --- Create and module to emulate a radio device without any actual radio connected
@@ -63,6 +51,6 @@ export RadioSim;
 # This type will be used as default fallback methods to handle 2 things 
 # - In case of functions not supported in the given backend to obtain a predictible (and non error) behaviour 
 # - To simplify access to similar backends fields
-AbstractSDR = Union{RadioSim,UHDBinding,PlutoSDR,SDROverNetwork,RTLSDRBinding,BladeRFBinding}
+AbstractSDR = Union{RadioSim,UHDBinding,PlutoSDR,RTLSDRBinding,BladeRFBinding}
 
 

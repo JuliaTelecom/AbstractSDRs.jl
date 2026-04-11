@@ -5,13 +5,11 @@
 
 getError(obj::UHDBinding) = UHDBindings.getError(obj);
 getError(obj::RadioSim) = RadioSims.getError(obj);
-getError(obj::SDROverNetwork) = SDROverNetworks.getMD(obj)[3];
 getError(obj::RTLSDRBinding) = RTLSDRBindings.getError(obj);
 getError(obj::BladeRFBinding) = BladeRFBindings.getError(obj);
 
 getTimestamp(obj::UHDBinding) = UHDBindings.getTimestamp(obj);
 getTimestamp(obj::RadioSim) = RadioSims.getTimestamp(obj);
-getTimestamp(obj::SDROverNetwork) = SDROverNetworks.getMD(obj)[1:2];
 getTimestamp(obj::RTLSDRBinding) = RTLSDRBindings.getTimestamp(obj);
 getTimestamp(obj::BladeRFBinding) = BladeRFBindings.getTimestamp(obj);
 

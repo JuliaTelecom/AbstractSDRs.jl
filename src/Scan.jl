@@ -19,7 +19,7 @@ The optionnal arguments are the one supported by UHDBindings and AdalmPluto. See
 """
 function scan(backend::Union{Nothing,Vector{Symbol}}=nothing;key...)
     # --- If call w/o argument we search for all potential backends 
-    # Note that we can not search for SDROverNetwork, RadioSims and RTLSDR
+    # Note that we can not search for RadioSims and RTLSDR
     # TODO => Scan methods for RTLSDR ?
     if isnothing(backend)
         backend = getSupportedSDRs()
