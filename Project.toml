@@ -1,6 +1,6 @@
 name = "AbstractSDRs"
 uuid = "0bdde9fc-719a-4dc7-8589-49ca6634fa6b"
-version = "0.7.1"
+version = "0.7.0"
 authors = ["Robin Gerzaguet <robin.gerzaguet@irisa.fr>"]
 
 [deps]
