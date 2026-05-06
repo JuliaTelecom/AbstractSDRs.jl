@@ -37,7 +37,7 @@ updateSamplingRate!(obj::RadioSim,tul...) = RadioSims.updateSamplingRate!(obj,tu
 updateSamplingRate!(obj::RTLSDRBinding,tul...) = RTLSDRBindings.updateSamplingRate!(obj,tul...);
 function updateSamplingRate!(obj::BladeRFBinding,tul...)
     BladeRFBindings.updateSamplingRate!(obj,tul...);
-    BladeRFBindings.updateRFBandwidth!(obj,tul...);
+    BladeRFBindings.updateBandwidth!(obj,tul...);
 end 
 function updateSamplingRate!(obj::PlutoSDR,tul...) 
     # For Adalm Pluto we should also update the RF filter band 
