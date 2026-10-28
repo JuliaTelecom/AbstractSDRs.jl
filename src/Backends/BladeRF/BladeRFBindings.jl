@@ -41,6 +41,7 @@ mutable struct BladeRFTxWrapper
     channel::Int
     buffer::Vector{Int16}
     ptr_metadata::Ref{bladerf_metadata}
+    enabled::Bool   # Tx module powered, set by the first `send`
 end
 # --- Main Rx structure 
 mutable struct BladeRFRx
@@ -274,43 +275,32 @@ function openBladeRF(
         # ----------------------------------------------------
         # --- Tx config
         # ----------------------------------------------------
-#=        status = bladerf_set_frequency(ptr_bladerf[], theChannelTx, convert(bladerf_frequency, carrierFreq))=#
-        #=_check_status(status, "set TX frequency")=#
-        #=container_tx_freq = Ref{bladerf_frequency}(0)=#
-        #=status = bladerf_get_frequency(ptr_bladerf[], theChannelTx, container_tx_freq)=#
-        #=_check_status(status, "get TX frequency")=#
-        #=effective_carrierFreq_tx = container_tx_freq[]=#
-
-        #=container_tx_sr = Ref{bladerf_sample_rate}(0)=#
-        #=status = bladerf_set_sample_rate(ptr_bladerf[], theChannelTx, convert(bladerf_sample_rate, samplingRate), container_tx_sr)=#
-        #=_check_status(status, "set TX sample rate")=#
-        #=effective_sampling_rate_tx = container_tx_sr[]=#
-
-        #=container_tx_bw = Ref{bladerf_bandwidth}(0)=#
-        #=status = bladerf_set_bandwidth(ptr_bladerf[], theChannelTx, convert(bladerf_bandwidth, requested_bandwidth), container_tx_bw)=#
-        #=_check_status(status, "set TX bandwidth")=#
-        #=effective_rf_bandwidth_tx = container_tx_bw[]=#
-
-        #=status = bladerf_set_gain(ptr_bladerf[], theChannelTx, convert(bladerf_gain, gain))=#
-        #=_check_status(status, "set TX gain")=#
-        #=container_tx_gain = Ref{bladerf_gain}(0)=#
-        #=status = bladerf_get_gain(ptr_bladerf[], theChannelTx, container_tx_gain)=#
-        #=_check_status(status, "get TX gain")=#
-        #=effective_gain_tx = container_tx_gain[]=#
-        #=status = bladerf_set_bias_tee(ptr_bladerf[], theChannelTx, biastee_tx)=#
-        #=_check_status(status, "set TX bias tee")=#
-
+        status = bladerf_set_frequency(ptr_bladerf[], theChannelTx, convert(bladerf_frequency, carrierFreq))
+        _check_status(status, "set TX frequency")
         container_tx_freq = Ref{bladerf_frequency}(0)
+        status = bladerf_get_frequency(ptr_bladerf[], theChannelTx, container_tx_freq)
+        _check_status(status, "get TX frequency")
         effective_carrierFreq_tx = container_tx_freq[]
 
         container_tx_sr = Ref{bladerf_sample_rate}(0)
+        status = bladerf_set_sample_rate(ptr_bladerf[], theChannelTx, convert(bladerf_sample_rate, samplingRate), container_tx_sr)
+        _check_status(status, "set TX sample rate")
         effective_sampling_rate_tx = container_tx_sr[]
 
         container_tx_bw = Ref{bladerf_bandwidth}(0)
+        status = bladerf_set_bandwidth(ptr_bladerf[], theChannelTx, convert(bladerf_bandwidth, requested_bandwidth), container_tx_bw)
+        _check_status(status, "set TX bandwidth")
         effective_rf_bandwidth_tx = container_tx_bw[]
 
+        status = bladerf_set_gain(ptr_bladerf[], theChannelTx, convert(bladerf_gain, gain))
+        _check_status(status, "set TX gain")
         container_tx_gain = Ref{bladerf_gain}(0)
+        status = bladerf_get_gain(ptr_bladerf[], theChannelTx, container_tx_gain)
+        _check_status(status, "get TX gain")
         effective_gain_tx = container_tx_gain[]
+        status = bladerf_set_bias_tee(ptr_bladerf[], theChannelTx, biastee_tx)
+        _check_status(status, "set TX bias tee")
+
         if !isnothing(tx_port)
             status = bladerf_set_rf_port(ptr_bladerf[], theChannelTx, _normalize_rf_port(tx_port))
             _check_status(status, "set TX RF port")
@@ -334,10 +324,10 @@ function openBladeRF(
         # ----------------------------------------------------
         # --- Configure Tx Streamer as sync structure
         # ----------------------------------------------------
-       #= status = bladerf_sync_config(ptr_bladerf[], BLADERF_TX_X1, BLADERF_FORMAT_SC16_Q11_META, 16, packet_size * 2, 8, 10000)=#
-        #=_check_status(status, "configure TX stream")=#
-        #=status = bladerf_enable_module(ptr_bladerf[], BLADERF_TX, true)=#
-        #=_check_status(status, "enable TX module")=#
+        # The Tx module stays off until the first `send`: an enabled Tx path leaks
+        # its LO at the carrier frequency even when no sample is sent.
+        status = bladerf_sync_config(ptr_bladerf[], BLADERF_TX_X1, BLADERF_FORMAT_SC16_Q11_META, 16, packet_size * 2, 8, 10000)
+        _check_status(status, "configure TX stream")
 
         # Metadata
         flag = BLADERF_META_FLAG_TX_BURST_START | BLADERF_META_FLAG_TX_NOW | BLADERF_META_FLAG_TX_BURST_END
@@ -351,7 +341,7 @@ function openBladeRF(
         bufferTx = zeros(Int16, packet_size * 2)
         bufferRx = zeros(Int16, packet_size * 2)
         bladeRFRx = BladeRFRxWrapper(theChannelRx, bufferRx, ptr_metadata_rx)
-        bladeRFTx = BladeRFTxWrapper(theChannelTx, bufferTx, ptr_metadata_tx)
+        bladeRFTx = BladeRFTxWrapper(theChannelTx, bufferTx, ptr_metadata_tx, false)
         rx = BladeRFRx(
                       bladeRFRx,
                       effective_carrierFreq_rx,
@@ -581,39 +571,40 @@ end
  
 
 function send(radio::BladeRFBinding,buffer::Array{Complex{T}},cyclic::Bool =false) where {T<:AbstractFloat}
-    # Size of buffer to send 
+    if !radio.tx.bladerf.enabled
+        _check_status(bladerf_enable_module(radio.radio[], BLADERF_TX, true), "enable TX module")
+        radio.tx.bladerf.enabled = true
+    end
+    # Size of buffer to send
     nT = length(buffer)
     # Size of internal buffer 
     nI = length(radio.tx.bladerf.buffer) ÷ 2 # 2 paths
-    # Number of complete bursts 
-    nbB = nT ÷ nI
-    # Size of residu 
-    r = nT - nbB * nI
+    # Chunk sizes for one pass over `buffer`: complete internal buffers, then the residu
+    chunks = fill(nI, nT ÷ nI)
+    r = nT - length(chunks) * nI
+    r > 0 && push!(chunks, r)
 
+    # One `send` call is one contiguous burst: it starts with the first chunk and,
+    # unless the transmission is cyclic, ends with the last one.
+    meta = radio.tx.bladerf.ptr_metadata[]
+    first = true
     nbE = 0 # Number of elements sent 
-    # Buffers 
     while(true)
-        for n ∈ 1 : nbB 
-            # Current buffer 
-            _fill_tx_buffer!(radio.tx.bladerf.buffer,buffer,(n-1)*nI,nI)
-            # Conversion to internal representation 
-            status = bladerf_sync_tx(radio.radio[], radio.tx.bladerf.buffer, nI , radio.tx.bladerf.ptr_metadata, 10000);
+        offset = 0
+        for (k, nS) ∈ enumerate(chunks)
+            _fill_tx_buffer!(radio.tx.bladerf.buffer,buffer,offset,nS)
+            meta.flags = UInt32(0)
+            first && (meta.flags |= BLADERF_META_FLAG_TX_BURST_START | BLADERF_META_FLAG_TX_NOW)
+            (!cyclic && k == length(chunks)) && (meta.flags |= BLADERF_META_FLAG_TX_BURST_END)
+            first = false
+            status = bladerf_sync_tx(radio.radio[], radio.tx.bladerf.buffer, nS , radio.tx.bladerf.ptr_metadata, 10000);
             if status == 0
-                nbE += nI
+                nbE += nS
             else 
                 @error "Error when sending data : Status is $status"
             end
+            offset += nS
         end
-        # Residu 
-        if r > 0 
-            _fill_tx_buffer!(radio.tx.bladerf.buffer,buffer,nbB*nI,r)
-            status = bladerf_sync_tx(radio.radio[], radio.tx.bladerf.buffer, r , radio.tx.bladerf.ptr_metadata, 10000);
-            if status == 0
-                nbE += r
-            else 
-                @error "Error when sending data : Status is $status"
-            end
-        end 
         if cyclic == false 
             break 
         end
@@ -638,6 +629,7 @@ function close(radio::BladeRFBinding)
         # Deactive radio module 
         status = bladerf_enable_module(radio.radio[], BLADERF_RX, false);
         status = bladerf_enable_module(radio.radio[], BLADERF_TX, false);
+        radio.tx.bladerf.enabled = false
         # Safely close module
         bladerf_close(radio.radio[]);
         radio.released = true 
