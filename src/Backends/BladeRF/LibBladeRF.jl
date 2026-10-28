@@ -4,6 +4,7 @@ module LibBladeRF
 using BladeRFHardwareDriver_jll
 #export BladeRFHardwareDriver_jll
 
+mutable struct bladerf end
 using CEnum
 
 @cenum bladerf_lna_gain::UInt32 begin
@@ -98,6 +99,22 @@ end
     BLADERF_RFIC_TXFIR_INT4 = 4
 end
 
+function bladerf_get_rfic_rx_fir(dev, rxfir)
+    ccall((:bladerf_get_rfic_rx_fir, libbladerf), Cint, (Ptr{bladerf}, Ptr{bladerf_rfic_rxfir}), dev, rxfir)
+end
+
+function bladerf_set_rfic_rx_fir(dev, rxfir)
+    ccall((:bladerf_set_rfic_rx_fir, libbladerf), Cint, (Ptr{bladerf}, bladerf_rfic_rxfir), dev, rxfir)
+end
+
+function bladerf_get_rfic_tx_fir(dev, txfir)
+    ccall((:bladerf_get_rfic_tx_fir, libbladerf), Cint, (Ptr{bladerf}, Ptr{bladerf_rfic_txfir}), dev, txfir)
+end
+
+function bladerf_set_rfic_tx_fir(dev, txfir)
+    ccall((:bladerf_set_rfic_tx_fir, libbladerf), Cint, (Ptr{bladerf}, bladerf_rfic_txfir), dev, txfir)
+end
+
 @cenum bladerf_power_sources::UInt32 begin
     BLADERF_UNKNOWN = 0
     BLADERF_PS_DC = 1
@@ -133,7 +150,6 @@ const bladerf_channel = Cint
 
 const bladerf_timestamp = UInt64
 
-mutable struct bladerf end
 
 @cenum bladerf_backend::UInt32 begin
     BLADERF_BACKEND_ANY = 0
@@ -415,6 +431,14 @@ end
 
 function bladerf_get_bandwidth_range(dev, ch, range)
     ccall((:bladerf_get_bandwidth_range, libbladerf), Cint, (Ptr{bladerf}, bladerf_channel, Ptr{Ptr{bladerf_range}}), dev, ch, range)
+end
+
+function bladerf_set_bias_tee(dev, ch, enable)
+    ccall((:bladerf_set_bias_tee, libbladerf), Cint, (Ptr{bladerf}, bladerf_channel, Bool), dev, ch, enable)
+end
+
+function bladerf_get_bias_tee(dev, ch, enable)
+    ccall((:bladerf_get_bias_tee, libbladerf), Cint, (Ptr{bladerf}, bladerf_channel, Ptr{Bool}), dev, ch, enable)
 end
 
 const bladerf_frequency = UInt64
@@ -850,7 +874,7 @@ function bladerf_write_otp(dev, buf)
 end
 
 function bladerf_set_rf_port(dev, ch, port)
-    ccall((:bladerf_set_rf_port, libbladerf), Cint, (Ptr{bladerf}, bladerf_channel, Ptr{Cchar}), dev, ch, port)
+    ccall((:bladerf_set_rf_port, libbladerf), Cint, (Ptr{bladerf}, bladerf_channel, Cstring), dev, ch, port)
 end
 
 function bladerf_get_rf_port(dev, ch, port)

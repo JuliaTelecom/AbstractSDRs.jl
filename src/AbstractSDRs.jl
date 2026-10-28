@@ -154,7 +154,7 @@ function openSDR(name::Symbol,tul...;key...)
         suppKwargs = [:agc_mode;:tuner_gain_mode]
         radio = openRTLSDR(tul...;parseKeyword(key,suppKwargs)...);
     elseif name == :bladerf 
-        suppKwargs = [:agc_mode] #FIXME specific bladerf call
+        suppKwargs = [:gain_mode; :bandwidth; :packet_size; :packetSize; :rx_port; :tx_port; :rx_fir; :biastee_rx; :biastee_tx]
         radio = openBladeRF(tul...;parseKeyword(key,suppKwargs)...);
     elseif name == :pluto
         # --- List of supported keywords 

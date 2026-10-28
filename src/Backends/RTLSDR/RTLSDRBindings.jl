@@ -232,7 +232,7 @@ function close(radio::RTLSDRBinding)
     @info "RTL-SDR device is now close"
 end
 
-function send(sig::Vector{Complex{Cfloat}},radio::RTLSDRBinding)
+function send(sig::Vector{Complex{Cfloat}},radio::RTLSDRBinding,kwargs)
     @warntx "Unsupported send method for RTLSDR"; 
 end
 
