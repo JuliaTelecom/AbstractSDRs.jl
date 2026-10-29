@@ -311,8 +311,11 @@ function openBladeRF(
         # ----------------------------------------------------
         # --- Configure Rx Streamer as sync structure
         # ----------------------------------------------------
-        
-        status = bladerf_sync_config(ptr_bladerf[], BLADERF_RX_X1, BLADERF_FORMAT_SC16_Q11_META, 16, packet_size * 2, 8, 10000)
+        # SC16_Q11 without metadata, in both directions (libbladeRF requires the
+        # same format for Rx and Tx). With FPGA v0.16 and FX3 firmware v2.6,
+        # libbladeRF 2.4.1 misreads the SC16_Q11_META packet headers: bogus
+        # timestamps, an overrun on every call and 508 valid samples per call.
+        status = bladerf_sync_config(ptr_bladerf[], BLADERF_RX_X1, BLADERF_FORMAT_SC16_Q11, 16, packet_size * 2, 8, 10000)
         _check_status(status, "configure RX stream")
         status = bladerf_enable_module(ptr_bladerf[], BLADERF_RX, true)
         _check_status(status, "enable RX module")
@@ -326,7 +329,7 @@ function openBladeRF(
         # ----------------------------------------------------
         # The Tx module stays off until the first `send`: an enabled Tx path leaks
         # its LO at the carrier frequency even when no sample is sent.
-        status = bladerf_sync_config(ptr_bladerf[], BLADERF_TX_X1, BLADERF_FORMAT_SC16_Q11_META, 16, packet_size * 2, 8, 10000)
+        status = bladerf_sync_config(ptr_bladerf[], BLADERF_TX_X1, BLADERF_FORMAT_SC16_Q11, 16, packet_size * 2, 8, 10000)
         _check_status(status, "configure TX stream")
 
         # Metadata
@@ -584,19 +587,11 @@ function send(radio::BladeRFBinding,buffer::Array{Complex{T}},cyclic::Bool =fals
     r = nT - length(chunks) * nI
     r > 0 && push!(chunks, r)
 
-    # One `send` call is one contiguous burst: it starts with the first chunk and,
-    # unless the transmission is cyclic, ends with the last one.
-    meta = radio.tx.bladerf.ptr_metadata[]
-    first = true
-    nbE = 0 # Number of elements sent 
+    nbE = 0 # Number of elements sent
     while(true)
         offset = 0
-        for (k, nS) ∈ enumerate(chunks)
+        for nS ∈ chunks
             _fill_tx_buffer!(radio.tx.bladerf.buffer,buffer,offset,nS)
-            meta.flags = UInt32(0)
-            first && (meta.flags |= BLADERF_META_FLAG_TX_BURST_START | BLADERF_META_FLAG_TX_NOW)
-            (!cyclic && k == length(chunks)) && (meta.flags |= BLADERF_META_FLAG_TX_BURST_END)
-            first = false
             status = bladerf_sync_tx(radio.radio[], radio.tx.bladerf.buffer, nS , radio.tx.bladerf.ptr_metadata, 10000);
             if status == 0
                 nbE += nS
