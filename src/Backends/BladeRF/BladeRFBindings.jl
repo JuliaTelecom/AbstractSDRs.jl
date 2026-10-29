@@ -190,7 +190,9 @@ function openBladeRF(
         packet_size = packetSize
     end
     packet_size = _normalize_packet_size(Int(packet_size))
-    requested_bandwidth = isnothing(bandwidth) ? samplingRate*0.50 : bandwidth
+    # The analog filter is only a roofing filter: the AD9361 decimation chain
+    # does the anti-aliasing. 0.75·fs keeps most of the Nyquist band.
+    requested_bandwidth = isnothing(bandwidth) ? samplingRate*0.75 : bandwidth
     selected_gain_mode = _resolve_gain_mode(gain_mode)
 
     # ----------------------------------------------------
