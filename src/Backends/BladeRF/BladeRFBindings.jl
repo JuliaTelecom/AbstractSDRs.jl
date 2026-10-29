@@ -183,7 +183,7 @@ function openBladeRF(
     rx_port=nothing,
     tx_port=nothing,
     rx_fir=nothing,
-    biastee_rx=true,
+    biastee_rx=false,
     biastee_tx=false
 )
     if !isnothing(packetSize)
