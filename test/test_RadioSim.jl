@@ -113,6 +113,10 @@ function check_recv()
     sig = recv(sdr,1024)
     @test length(sig) == 1024 
     @test eltype(sig) == Complex{Float32}
+    # recv! returns the first samples of the stored buffer, without allocating
+    @test sig == sdr.rx.radioSim.buffer[1:1024]
+    recv!(sig,sdr)
+    @test (@allocated recv!(sig,sdr)) == 0
     close(sdr)
     @test isClosed(sdr) == true
 end 
