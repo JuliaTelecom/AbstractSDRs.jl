@@ -1,6 +1,6 @@
 name = "AbstractSDRs"
 uuid = "0bdde9fc-719a-4dc7-8589-49ca6634fa6b"
-version = "0.7.0"
+version = "0.8.0"
 authors = ["Robin Gerzaguet <robin.gerzaguet@irisa.fr>"]
 
 [deps]
@@ -23,7 +23,7 @@ Printf = "1.6"
 Reexport = "0.2,1.0"
 Sockets = "1.6"
 Test = "1.6"
-UHDBindings = "0.6.0"
+UHDBindings = "0.6.0, 0.7"
 julia = "1.6"
 librtlsdr_jll = "0.6"
 
