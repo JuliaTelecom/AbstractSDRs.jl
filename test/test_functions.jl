@@ -4,7 +4,7 @@
 """
 Scan with uhd_find_devices and return the USRP identifier 
 """
-function check_scan(b::Symbol;UHD_ADDRESS)
+function check_scan(b::Symbol)
     # --- First we use no parameter (broadcast ethernet link) 
     str = scan(b)
     if length(str) == 0
